@@ -4,6 +4,7 @@
 *.db
 *.pid
 *.swp
+.ropeproject/
 .coverage
 .DS_Store
 pip-log.txt
