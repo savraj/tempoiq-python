@@ -5,8 +5,7 @@ from tempodb import endpoint as p
 
 class TestEndpoint(unittest.TestCase):
     def setUp(self):
-        self.end = p.HTTPEndpoint('my_id', 'foo', 'bar',
-                                  'http://www.nothing.com')
+        self.end = p.HTTPEndpoint('http://www.nothing.com', 'foo', 'bar')
         monkeypatch_requests(self.end)
 
     def test_make_url_args_list(self):

@@ -4,10 +4,6 @@ import urlparse
 import urllib
 
 
-BASE_URL = 'https://api.tempo-db.com/v1/'
-SERIES_ENDPOINT = 'series/'
-
-
 def make_url_args(params):
     """Utility function for constructing a URL query string from a dictionary
     of parameters.  The dictionary's values can be of various types: lists,
@@ -37,11 +33,11 @@ class HTTPEndpoint(object):
     """Represents an HTTP endpoint for accessing a REST API.  Provides
     utility methods for GET, POST, PUT, and DELETE requests.
 
+    :param string base_url: the base URL for the endpoint
     :param string key: the API key for the endpoint
-    :param string secret: the API secret for the endpoint
-    :param string base_url: the base URL for the endpoint"""
+    :param string secret: the API secret for the endpoint"""
 
-    def __init__(self, database_id, key, secret, base_url=BASE_URL):
+    def __init__(self, base_url, key, secret):
         if base_url.endswith('/'):
             self.base_url = base_url
         else:
@@ -49,9 +45,8 @@ class HTTPEndpoint(object):
             #slash so the urljoins will work properly
             self.base_url = base_url + '/'
 
-        self.database_id = database_id
         self.headers = {
-            'User-Agent': 'tempodb-python/%s' % "1.0.0",
+            'User-Agent': 'tempoiq-python/%s' % "1.0.0",
             'Accept-Encoding': 'gzip'
         }
         self.auth = HTTPBasicAuth(key, secret)
