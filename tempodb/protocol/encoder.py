@@ -3,20 +3,26 @@ import json
 
 class TempoIQEncoder(json.JSONEncoder):
     def encode_point(self, point):
-        return self.default({'t': point.timestamp, 'v': point.value})
+        return {
+            't': self.encode_datetime(point.timestamp),
+            'v': point.value}
+
+    def encode_datetime(self, dt):
+        return dt.isoformat()
 
 
 class WriteEncoder(TempoIQEncoder):
     encoders = {
-        'device': 'encode_device',
-        'sensor': 'encode_sensor',
-        'point': 'encode_point'
+        'Device': 'encode_device',
+        'Sensor': 'encode_sensor',
+        'Point': 'encode_point',
+        'datetime': 'encode_datetime'
     }
 
     def default(self, o):
         encoder_name = self.encoders.get(o.__class__.__name__)
         if encoder_name is None:
-            super(self, json.JSONEncoder).default()
+            super(TempoIQEncoder, self).default(o)
         encoder = getattr(self, encoder_name)
         return encoder(o)
 
