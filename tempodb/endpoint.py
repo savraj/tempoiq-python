@@ -39,11 +39,11 @@ class HTTPEndpoint(object):
 
     def __init__(self, base_url, key, secret):
         if base_url.endswith('/'):
-            self.base_url = base_url
+            self.base_url = base_url + 'v2/'
         else:
             #in case people use their own, it really has to end in a
             #slash so the urljoins will work properly
-            self.base_url = base_url + '/'
+            self.base_url = base_url + '/v2/'
 
         self.headers = {
             'User-Agent': 'tempoiq-python/%s' % "1.0.0",
