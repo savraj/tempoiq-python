@@ -4,9 +4,8 @@ import urllib
 import json
 import endpoint
 import protocol
-from protocol.encoder import WriteEncoder
+from protocol.encoder import WriteEncoder, CreateEncoder
 from response import Response, ResponseException
-from temporal.validate import check_time_param
 
 
 def make_series_url(key):
@@ -84,9 +83,15 @@ class with_cursor(object):
 
 class Client(object):
     write_encoder = WriteEncoder()
+    create_encoder = CreateEncoder()
 
     def __init__(self, endpoint):
         self.endpoint = endpoint
+
+    def create_device(self, device):
+        url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
+        j = json.dumps(device, default=self.create_encoder.default)
+        self.endpoint.post(url, j)
 
     def write(self, write_request):
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')
