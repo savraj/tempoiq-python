@@ -68,7 +68,7 @@ class HTTPEndpoint(object):
         resp = self.pool.post(to_hit, data=body, auth=self.auth)
         return resp
 
-    def get(self, url):
+    def get(self, url, body=''):
         """Perform a GET request to the given resource with the given URL.  The
         "url" argument will be joined to the base URL this object was
         initialized with.
@@ -77,7 +77,7 @@ class HTTPEndpoint(object):
         :rtype: requests.Response object"""
 
         to_hit = urlparse.urljoin(self.base_url, url)
-        resp = self.pool.get(to_hit, auth=self.auth)
+        resp = self.pool.get(to_hit, data=body, auth=self.auth)
         return resp
 
     def delete(self, url):

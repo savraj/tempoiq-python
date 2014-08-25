@@ -83,6 +83,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.get(url)
         self.end.pool.get.assert_called_once_with(
             'http://www.nothing.com/v2/series/',
+            data='',
             auth=self.end.auth)
 
     def test_endpoint_put(self):

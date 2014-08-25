@@ -97,3 +97,12 @@ class Client(object):
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')
         self.endpoint.post(url, json.dumps(write_request,
                                            default=self.write_encoder.default))
+
+    def read(self, query):
+        url = urlparse.urljoin(self.endpoint.base_url, 'read/')
+        j = query.to_json()
+        self.endpoint.get(url, j)
+
+    def query(self):
+        pass
+        #return QueryBuilder(self)
