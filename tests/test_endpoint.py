@@ -53,7 +53,7 @@ class TestEndpoint(unittest.TestCase):
         self.assertEquals(ret, 'foo=2.0')
 
     def test_endpoint_constructor(self):
-        self.assertEquals(self.end.base_url, 'http://www.nothing.com/')
+        self.assertEquals(self.end.base_url, 'http://www.nothing.com/v2/')
         self.assertEquals(self.end.headers['User-Agent'],
                           'tempoiq-python/%s' % '1.0.0')
         self.assertEquals(self.end.headers['Accept-Encoding'], 'gzip')
@@ -61,7 +61,7 @@ class TestEndpoint(unittest.TestCase):
 
     def test_endpoint_constructor_with_slash(self):
         self.end = p.HTTPEndpoint('http://www.nothing.com', 'foo', 'bar')
-        self.assertEquals(self.end.base_url, 'http://www.nothing.com/')
+        self.assertEquals(self.end.base_url, 'http://www.nothing.com/v2/')
         self.assertEquals(self.end.headers['User-Agent'],
                           'tempoiq-python/%s' % '1.0.0')
         self.assertEquals(self.end.headers['Accept-Encoding'], 'gzip')
@@ -73,7 +73,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.pool.post.return_value = True
         self.end.post(url, body)
         self.end.pool.post.assert_called_once_with(
-            'http://www.nothing.com/series/',
+            'http://www.nothing.com/v2/series/',
             data=body,
             auth=self.end.auth)
 
@@ -82,7 +82,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.pool.get.return_value = True
         self.end.get(url)
         self.end.pool.get.assert_called_once_with(
-            'http://www.nothing.com/series/',
+            'http://www.nothing.com/v2/series/',
             auth=self.end.auth)
 
     def test_endpoint_put(self):
@@ -91,7 +91,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.pool.put.return_value = True
         self.end.put(url, body)
         self.end.pool.put.assert_called_once_with(
-            'http://www.nothing.com/series/',
+            'http://www.nothing.com/v2/series/',
             data=body,
             auth=self.end.auth)
 
@@ -100,5 +100,5 @@ class TestEndpoint(unittest.TestCase):
         self.end.pool.delete.return_value = True
         self.end.delete(url)
         self.end.pool.delete.assert_called_once_with(
-            'http://www.nothing.com/series/',
+            'http://www.nothing.com/v2/series/',
             auth=self.end.auth)
