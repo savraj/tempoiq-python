@@ -1,6 +1,6 @@
 import unittest
 import datetime
-from tempodb.temporal.validate import check_time_param, convert_iso_stamp
+from tempoiq.temporal.validate import check_time_param, convert_iso_stamp
 
 
 class TestTempValidate(unittest.TestCase):

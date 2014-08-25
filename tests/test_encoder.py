@@ -1,8 +1,8 @@
 import unittest
 import json
 import datetime
-from tempodb.protocol.encoder import WriteEncoder, CreateEncoder
-from tempodb.protocol import Sensor, Device, Point
+from tempoiq.protocol.encoder import WriteEncoder, CreateEncoder
+from tempoiq.protocol import Sensor, Device, Point
 
 
 class TestWriteEncoder(unittest.TestCase):

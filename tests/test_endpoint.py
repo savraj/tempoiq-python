@@ -1,6 +1,6 @@
 import unittest
 from monkey import monkeypatch_requests
-from tempodb import endpoint as p
+from tempoiq import endpoint as p
 
 
 class TestEndpoint(unittest.TestCase):

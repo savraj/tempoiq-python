@@ -1,5 +1,5 @@
 import json
-from tempodb.temporal.validate import convert_iso_stamp
+from tempoiq.temporal.validate import convert_iso_stamp
 
 
 def make_generator(d):
@@ -94,7 +94,7 @@ class DataPointCursor(Cursor):
         n = self.response.session.get(link)
         #HACK: put here to avoid circular import, no performance hit
         #because the VM will cache the module
-        from tempodb.response import Response
+        from tempoiq.response import Response
         self.response = Response(n, self.response.session)
         check_response(self.response)
         j = json.loads(n.text)
@@ -112,7 +112,7 @@ class SeriesCursor(Cursor):
             raise StopIteration
 
         n = self.response.session.get(link)
-        from tempodb.response import Response
+        from tempoiq.response import Response
         self.response = Response(n, self.response.session)
         check_response(self.response)
         j = json.loads(n.text)

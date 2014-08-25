@@ -1,7 +1,7 @@
 import unittest
 import json
 import mock
-from tempodb.protocol.cursor import Cursor, DataPointCursor, SeriesCursor
+from tempoiq.protocol.cursor import Cursor, DataPointCursor, SeriesCursor
 
 
 class DummyType(object):

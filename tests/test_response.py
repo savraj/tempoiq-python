@@ -1,5 +1,5 @@
 import unittest
-from tempodb.response import Response
+from tempoiq.response import Response
 from test_protocol_cursor import DummyResponse
 
 

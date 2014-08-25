@@ -9,7 +9,7 @@
 .DS_Store
 pip-log.txt
 /*.egg-info
-/tempodb/.ropeproject
+/tempoiq/.ropeproject
 /build
 /cover
 /dist

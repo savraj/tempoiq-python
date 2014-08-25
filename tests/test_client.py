@@ -1,5 +1,5 @@
 import unittest
-from tempodb.session import get_session
+from tempoiq.session import get_session
 from monkey import monkeypatch_requests
 
 
