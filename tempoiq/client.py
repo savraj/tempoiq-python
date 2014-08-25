@@ -5,6 +5,7 @@ import json
 import endpoint
 import protocol
 from protocol.encoder import WriteEncoder, CreateEncoder
+from protocol.query.builder import QueryBuilder
 from response import Response, ResponseException
 
 
@@ -103,6 +104,5 @@ class Client(object):
         j = query.to_json()
         self.endpoint.get(url, j)
 
-    def query(self):
-        pass
-        #return QueryBuilder(self)
+    def query(self, object_type):
+        return QueryBuilder(self, object_type)
