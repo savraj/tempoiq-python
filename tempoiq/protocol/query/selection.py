@@ -1,6 +1,7 @@
 class Compound(object):
     def __init__(self):
         self.selectors = []
+        self.selection_type = None
 
     def add(self, selector):
         self.selectors.append(selector)
@@ -56,13 +57,47 @@ class DictSelectable(Selectable):
         return ItemProxy(self.selection_type, self.key, key)
 
 
+class Selection(object):
+    def __init__(self):
+        self.selection = None
+
+    def add(self, selector):
+        if self.selection is None:
+            if issubclass(selector.__class__, Compound):
+                self.selection = selector
+            else:
+                clause = AndClause()
+                clause.add(selector)
+                self.selection = clause
+        else:
+            self.selector.add(selector)
+
+
 def and_(selectors):
     s = AndClause()
+    object_type = None
     for selector in selectors:
+        if object_type is None:
+            object_type = selector.selection_type
+        else:
+            if object_type != selector.selection_type:
+                msg = 'Selectors in an "and" clause must be of uniform type'
+                raise TypeError(msg)
         s.add(selector)
+    s.selection_type = object_type
+    return s
 
 
 def or_(selectors):
     s = OrClause()
+    object_type = None
     for selector in selectors:
+        if object_type is None:
+            object_type = selector.selection_type
+        else:
+            if object_type != selector.selection_type:
+                msg = 'Selectors in an "or" clause must be of uniform type'
+                raise TypeError(msg)
         s.add(selector)
+    s.selection_type = object_type
+    return s
