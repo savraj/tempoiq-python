@@ -1,8 +1,10 @@
 import unittest
 import json
 import datetime
-from tempoiq.protocol.encoder import WriteEncoder, CreateEncoder
+from tempoiq.protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from tempoiq.protocol import Sensor, Device, Point
+from tempoiq.protocol.query.selection import *
+from tempoiq.protocol.query.builder import QueryBuilder
 
 
 class TestWriteEncoder(unittest.TestCase):
@@ -73,5 +75,79 @@ class TestCreateEncoder(unittest.TestCase):
                 'name': 'foo',
                 'attributes': {'foo': 'bar'}
             }]
+        }
+        self.assertEquals(j, json.dumps(expected))
+
+
+class TestReadEncoder(unittest.TestCase):
+    read_encoder = ReadEncoder()
+
+    def test_encode_scalar_selector(self):
+        selector = Device.key == 'foo'
+        j = json.dumps(selector, default=self.read_encoder.default)
+        expected = {'key': 'foo'}
+        self.assertEquals(j, json.dumps(expected))
+
+    def test_encode_and_clause(self):
+        clause = and_([Device.key == 'foo', Device.key == 'bar'])
+        j = json.dumps(clause, default=self.read_encoder.default)
+        expected = {
+            'and': [
+                {'key': 'foo'},
+                {'key': 'bar'}
+            ]
+        }
+        self.assertEquals(j, json.dumps(expected))
+
+    def test_encode_or_clause(self):
+        clause = or_([Device.key == 'foo', Device.key == 'bar'])
+        j = json.dumps(clause, default=self.read_encoder.default)
+        expected = {
+            'or': [
+                {'key': 'foo'},
+                {'key': 'bar'}
+            ]
+        }
+        self.assertEquals(j, json.dumps(expected))
+
+    def test_encode_selection(self):
+        clause = or_([Device.key == 'foo', Device.key == 'bar'])
+        selection = Selection()
+        selection.add(clause)
+        j = json.dumps(selection, default=self.read_encoder.default)
+        expected = {
+            'or': [
+                {'key': 'foo'},
+                {'key': 'bar'}
+            ]
+        }
+        self.assertEquals(j, json.dumps(expected))
+
+    def test_encode_empty_selection(self):
+        selection = Selection()
+        j = json.dumps(selection, default=self.read_encoder.default)
+        expected = {}
+        self.assertEquals(j, json.dumps(expected))
+
+    def test_encode_query_builder(self):
+        qb = QueryBuilder(None, Sensor)
+        qb.filter(Device.key == 'foo').filter(Sensor.key == 'bar')
+        j = json.dumps(qb, default=self.read_encoder.default)
+        expected = {
+            'search': {
+                'select': 'sensors',
+                'filters': {
+                    'devices': {
+                        'and': [
+                            {'key': 'foo'}
+                        ]
+                    },
+                    'sensors': {
+                        'and': [
+                            {'key': 'bar'}
+                        ]
+                    }
+                }
+            }
         }
         self.assertEquals(j, json.dumps(expected))

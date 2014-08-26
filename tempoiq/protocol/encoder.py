@@ -1,4 +1,5 @@
 import json
+from query.selection import AndClause
 
 
 class TempoIQEncoder(json.JSONEncoder):
@@ -60,3 +61,56 @@ class CreateEncoder(TempoIQEncoder):
             'name': sensor.name,
             'attributes': sensor.attributes
         }
+
+
+class ReadEncoder(TempoIQEncoder):
+    encoders = {
+        'ScalarSelector': 'encode_scalar_selector',
+        'AndClause': 'encode_compound_clause',
+        'OrClause': 'encode_compound_clause',
+        'QueryBuilder': 'encode_query_builder',
+        'Selection': 'encode_selection'
+    }
+
+    def default(self, o):
+        encoder_name = self.encoders.get(o.__class__.__name__)
+        if encoder_name is None:
+            super(TempoIQEncoder, self).default(o)
+        encoder = getattr(self, encoder_name)
+        return encoder(o)
+
+    def encode_compound_clause(self, clause):
+        name = None
+        if isinstance(clause, AndClause):
+            name = 'and'
+        else:
+            name = 'or'
+
+        return {
+            name: map(self.encode_scalar_selector, clause.selectors)
+        }
+
+    def encode_query_builder(self, builder):
+        return {
+            'search': {
+                'select': builder.object_type,
+                'filters': {
+                    'devices': self.encode_selection(
+                        builder.selection['devices']),
+                    'sensors': self.encode_selection(
+                        builder.selection['sensors'])
+                }
+            }
+        }
+
+    def encode_scalar_selector(self, selector):
+        return {
+            selector.key: selector.value
+        }
+
+    def encode_selection(self, selection):
+        if selection.selection is None:
+            return {}
+        if len(selection.selection.selectors) == 0:
+            return {}
+        return self.encode_compound_clause(selection.selection)

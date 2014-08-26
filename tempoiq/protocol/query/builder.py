@@ -4,7 +4,7 @@ from selection import Selection, ScalarSelector, OrClause, AndClause
 class QueryBuilder(object):
     def __init__(self, client, object_type):
         self.client = client
-        self.object_type = object_type
+        self.object_type = object_type.__name__.lower() + 's'
         self.selection = {
             'devices': Selection(),
             'sensors': Selection()
