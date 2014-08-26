@@ -65,11 +65,19 @@ class CreateEncoder(TempoIQEncoder):
 
 class ReadEncoder(TempoIQEncoder):
     encoders = {
+        'Point': 'encode_point',
+        'datetime': 'encode_datetime',
         'ScalarSelector': 'encode_scalar_selector',
         'AndClause': 'encode_compound_clause',
         'OrClause': 'encode_compound_clause',
         'QueryBuilder': 'encode_query_builder',
-        'Selection': 'encode_selection'
+        'Selection': 'encode_selection',
+        'Find': 'encode_function',
+        'Interpolation': 'encode_function',
+        'MultiRollup': 'encode_function',
+        'Rollup': 'encode_function',
+        'Aggregation': 'encode_function',
+        'ConvertTZ': 'encode_function'
     }
 
     def default(self, o):
@@ -90,8 +98,14 @@ class ReadEncoder(TempoIQEncoder):
             name: map(self.encode_scalar_selector, clause.selectors)
         }
 
-    def encode_query_builder(self, builder):
+    def encode_function(self, function):
         return {
+            'name': function.name,
+            'args': function.args
+        }
+
+    def encode_query_builder(self, builder):
+        j = {
             'search': {
                 'select': builder.object_type,
                 'filters': {
@@ -100,8 +114,15 @@ class ReadEncoder(TempoIQEncoder):
                     'sensors': self.encode_selection(
                         builder.selection['sensors'])
                 }
-            }
+            },
+            builder.operation.name: builder.operation.args
         }
+        if len(builder.pipeline) > 0:
+            j['fold'] = {
+                'functions': map(self.encode_function, builder.pipeline)
+
+            }
+        return j
 
     def encode_scalar_selector(self, selector):
         return {

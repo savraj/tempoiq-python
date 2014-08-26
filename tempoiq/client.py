@@ -4,7 +4,7 @@ import urllib
 import json
 import endpoint
 import protocol
-from protocol.encoder import WriteEncoder, CreateEncoder
+from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, ResponseException
 
@@ -85,6 +85,7 @@ class with_cursor(object):
 class Client(object):
     write_encoder = WriteEncoder()
     create_encoder = CreateEncoder()
+    read_encoder = ReadEncoder()
 
     def __init__(self, endpoint):
         self.endpoint = endpoint
@@ -101,7 +102,7 @@ class Client(object):
 
     def read(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
-        j = query.to_json()
+        j = json.dumps(query, default=self.read_encoder.default)
         self.endpoint.get(url, j)
 
     def query(self, object_type):
