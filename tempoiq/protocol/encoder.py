@@ -17,7 +17,10 @@ class WriteEncoder(TempoIQEncoder):
         'Device': 'encode_device',
         'Sensor': 'encode_sensor',
         'Point': 'encode_point',
-        'datetime': 'encode_datetime'
+        'datetime': 'encode_datetime',
+        'Rule': 'encode_rule',
+        'Trigger': 'encode_trigger',
+        'Webhook': 'encode_webhook'
     }
 
     def default(self, o):
@@ -27,11 +30,51 @@ class WriteEncoder(TempoIQEncoder):
         encoder = getattr(self, encoder_name)
         return encoder(o)
 
+    def encode_condition(self, condition):
+        return {
+            'trigger': self.encode_trigger(condition.trigger),
+            'filter': {
+                'and': map(self.encode_filter, condition.filters)
+            }
+        }
+
     def encode_device(self, device):
         return device.key
 
+    def encode_filter(self, _filter):
+        return {
+            'operation': _filter.inclusion,
+            'type': _filter.filter_type,
+            'arguments': _filter.args
+        }
+
+    def encode_rule(self, rule):
+        read_encoder = ReadEncoder()
+        j = {
+            'conditions': map(self.encode_condition, rule.conditions),
+            'name': rule.name,
+            'alerts': rule.alert_by,
+            'actions': [self.default(rule.action)],
+            'selection': read_encoder.default(rule.selection)
+        }
+
+        if rule.key is not None:
+            j['key'] = rule.key
+        return j
+
     def encode_sensor(self, sensor):
         return sensor.key
+
+    def encode_trigger(self, trigger):
+        return {
+            'name': trigger.trigger_type,
+            'arguments': trigger.args
+        }
+
+    def encode_webhook(self, webhook):
+        return {
+            'url': webhook.url
+        }
 
 
 class CreateEncoder(TempoIQEncoder):
