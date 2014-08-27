@@ -95,15 +95,20 @@ class Client(object):
         j = json.dumps(device, default=self.create_encoder.default)
         self.endpoint.post(url, j)
 
-    def write(self, write_request):
-        url = urlparse.urljoin(self.endpoint.base_url, 'write/')
-        self.endpoint.post(url, json.dumps(write_request,
-                                           default=self.write_encoder.default))
+    def monitor(self, rule):
+        url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
+        rule_json = json.dumps(rule, default=self.write_encoder.default)
+        self.endpoint.post(url, rule_json)
+
+    def query(self, object_type):
+        return QueryBuilder(self, object_type)
 
     def read(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
         self.endpoint.get(url, j)
 
-    def query(self, object_type):
-        return QueryBuilder(self, object_type)
+    def write(self, write_request):
+        url = urlparse.urljoin(self.endpoint.base_url, 'write/')
+        self.endpoint.post(url, json.dumps(write_request,
+                                           default=self.write_encoder.default))

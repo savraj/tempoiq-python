@@ -1,5 +1,10 @@
+import warnings
+import exceptions
 from selection import Selection, ScalarSelector, OrClause, AndClause
 from functions import *
+
+
+PIPEMSG = 'Pipeline functions passed to monitor call currently have no effect'
 
 
 class QueryBuilder(object):
@@ -41,6 +46,12 @@ class QueryBuilder(object):
     def interpolate(self, function, period):
         self.pipeline.append(Interpolation(function, period))
         return self
+
+    def monitor(self, rule):
+        if self.pipeline:
+            warnings.warn(PIPEMSG, exceptions.FutureWarning)
+        rule.selection = self.selection
+        self.client.monitor(rule)
 
     def multi_rollup(self, functions, period):
         self.pipeline.append(MultiRollup(functions, period))
