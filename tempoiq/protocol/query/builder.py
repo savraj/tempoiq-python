@@ -5,6 +5,7 @@ from functions import *
 
 
 PIPEMSG = 'Pipeline functions passed to monitor call currently have no effect'
+DEVICEMSG = 'Pipeline functions passed to device reads have no effect'
 
 
 def extract_key_for_monitoring(selection):
@@ -76,14 +77,21 @@ class QueryBuilder(object):
         return self
 
     def read(self, **kwargs):
-        if self.object_type in ['sensors', 'devices']:
+        if self.object_type == 'sensors':
             start = kwargs['start']
             end = kwargs['end']
             args = {'start': start, 'stop': end}
             self.operation = APIOperation('read', args)
             self._normalize_pipeline_functions(start, end)
             return self.client.read(self)
-        elif self.object_type in ['rules']:
+        elif self.object_type == 'devices':
+            if self.pipeline:
+                self.pipeline = []
+                warnings.warn(DEVICEMSG, exceptions.FutureWarning)
+            size = kwargs.get('size', 5000)
+            self.operation = APIOperation('find', {'quantifier': 'all'})
+            return self.client.search_devices(self, size=size)
+        elif self.object_type == 'rules':
             kwargs['__method$$'] = 'get_rule'
             return self._handle_monitor_read(**kwargs)
         else:

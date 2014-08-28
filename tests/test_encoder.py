@@ -250,3 +250,12 @@ class TestReadEncoder(unittest.TestCase):
             'http://test.tempo-iq.com/v2/monitors/foo',
             data='',
             auth=self.client.endpoint.auth)
+
+    def test_query_builder_to_device_search(self):
+        qb = QueryBuilder(self.client, Device)
+        qb.filter(Device.key == 'foo').read()
+        expected = '{"search": {"filters": {"sensors": {}, "devices": {"and": [{"key": "foo"}]}}, "select": "devices"}, "find": {"quantifier": "all"}}'
+        self.client.endpoint.pool.get.assert_called_once_with(
+            'http://test.tempo-iq.com/v2/devices/',
+            data=expected,
+            auth=self.client.endpoint.auth)

@@ -118,6 +118,12 @@ class Client(object):
         j = json.dumps(query, default=self.read_encoder.default)
         self.endpoint.get(url, j)
 
+    def search_devices(self, query, size=5000):
+        #TODO - actually use the size param
+        url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
+        j = json.dumps(query, default=self.read_encoder.default)
+        self.endpoint.get(url, j)
+
     def write(self, write_request):
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')
         self.endpoint.post(url, json.dumps(write_request,
