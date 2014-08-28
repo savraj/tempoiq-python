@@ -1,7 +1,3 @@
-import protocol
-import json
-
-
 SUCCESS = 0
 FAILURE = 1
 PARTIAL = 2
@@ -65,11 +61,11 @@ class Response(object):
         self.body = self.resp.text
         self.data = None
 
-    def _cast_payload(self, t):
-        if type(t) == list:
-            obj = getattr(protocol, t[0])
-            l = json.loads(self.resp.text)
-            self.data = [obj(d, self) for d in l]
-        else:
-            obj = getattr(protocol, t)
-            self.data = obj(self.resp.text, self)
+
+class SensorPointsResponse(Response):
+    def __init__(self, resp, session):
+        super(Response, self).__init__(resp, session)
+        self.parse(self.body)
+
+    def parse(self, body):
+        pass

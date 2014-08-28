@@ -25,7 +25,7 @@ def check_response(resp):
     s = resp.status
     if s != 200:
         raise ValueError(
-            'TempoDB API returned %d as status when 200 was expected' % s)
+            'TempoIQ API returned %d as status when 200 was expected' % s)
 
 
 class Cursor(object):
@@ -75,15 +75,13 @@ class DataPointCursor(Cursor):
     :type response: :class:`tempodb.response.Response`
     :param string tz: the timezone the data is returned in"""
 
-    def __init__(self, data, t, response, tz=None):
+    def __init__(self, data, response):
         self.response = response
-        self.type = t
-        self.tz = tz
         self.rollup = data.get('rollup')
         self.start = convert_iso_stamp(data.get('start'))
         self.end = convert_iso_stamp(data.get('end'))
         self.data = make_generator(
-            [self.type(d, self.response, tz=tz) for d in data['data']])
+            [Row(d, self.response) for d in data['data']])
 
     def _fetch_next(self):
         try:
@@ -100,26 +98,3 @@ class DataPointCursor(Cursor):
         j = json.loads(n.text)
         self.data = make_generator(
             [self.type(d, self.response, tz=self.tz) for d in j['data']])
-
-
-class SeriesCursor(Cursor):
-    """An iterable cursor over a collection of Series objects"""
-
-    def _fetch_next(self):
-        try:
-            link = self.response.resp.links['next']['url']
-        except KeyError:
-            raise StopIteration
-
-        n = self.response.session.get(link)
-        from tempoiq.response import Response
-        self.response = Response(n, self.response.session)
-        check_response(self.response)
-        j = json.loads(n.text)
-        self.data = make_generator(
-            [self.type(d, self.response) for d in j])
-
-
-class SingleValueCursor(Cursor):
-    """An iterable cursor over a collection of SingleValue objects"""
-    pass
