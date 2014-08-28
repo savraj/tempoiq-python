@@ -2,7 +2,7 @@ import unittest
 import json
 import datetime
 from tempoiq.protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
-from tempoiq.protocol import Sensor, Device, Point
+from tempoiq.protocol import Sensor, Device, Point, Rule
 from tempoiq.protocol.query.selection import *
 from tempoiq.protocol.query.builder import QueryBuilder
 from tempoiq.session import get_session
@@ -140,7 +140,7 @@ class TestReadEncoder(unittest.TestCase):
         start = datetime.datetime(2014, 1, 1)
         end = datetime.datetime(2014, 1, 2)
         qb.filter(Device.key == 'foo').filter(Sensor.key == 'bar')
-        qb.read(start, end)
+        qb.read(start=start, end=end)
         j = json.dumps(qb, default=self.read_encoder.default)
         expected = {
             'search': {
@@ -173,7 +173,7 @@ class TestReadEncoder(unittest.TestCase):
         qb.aggregate('max').convert_timezone('CDT')
         qb.rollup('min', '1min').multi_rollup(['max', 'min'], '1min')
         qb.interpolate('linear', '1min').find('max', '1min')
-        qb.read(start, end)
+        qb.read(start=start, end=end)
         j = json.dumps(qb, default=self.read_encoder.default)
         expected = {
             'search': {
@@ -242,3 +242,11 @@ class TestReadEncoder(unittest.TestCase):
             }
         }
         self.assertEquals(j, json.dumps(expected))
+
+    def test_query_builder_to_monitoring_read(self):
+        qb = QueryBuilder(self.client, Rule)
+        qb.filter(Rule.key == 'foo').read()
+        self.client.endpoint.pool.get.assert_called_once_with(
+            'http://test.tempo-iq.com/v2/monitors/foo',
+            data='',
+            auth=self.client.endpoint.auth)

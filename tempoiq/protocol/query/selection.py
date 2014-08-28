@@ -70,7 +70,7 @@ class Selection(object):
                 clause.add(selector)
                 self.selection = clause
         else:
-            self.selector.add(selector)
+            self.selection.add(selector)
 
 
 def and_(selectors):

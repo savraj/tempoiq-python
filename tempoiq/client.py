@@ -82,6 +82,15 @@ class with_cursor(object):
         return wrapper
 
 
+class MonitoringClient(object):
+    def __init__(self, endpoint):
+        self.endpoint = endpoint
+
+    def get_rule(self, key):
+        url = urlparse.urljoin(self.endpoint.base_url, 'monitors/' + key)
+        self.endpoint.get(url)
+
+
 class Client(object):
     write_encoder = WriteEncoder()
     create_encoder = CreateEncoder()
@@ -89,6 +98,7 @@ class Client(object):
 
     def __init__(self, endpoint):
         self.endpoint = endpoint
+        self.monitoring_client = MonitoringClient(self.endpoint)
 
     def create_device(self, device):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')

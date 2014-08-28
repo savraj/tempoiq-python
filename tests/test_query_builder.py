@@ -1,7 +1,9 @@
 import unittest
 from tempoiq.protocol.device import Device
 from tempoiq.protocol.sensor import Sensor
+from tempoiq.protocol.rule import Rule
 from tempoiq.protocol.query.builder import QueryBuilder
+from tempoiq.protocol.query.builder import extract_key_for_monitoring
 from tempoiq.protocol.query.selection import AndClause, OrClause, or_
 
 
@@ -26,3 +28,9 @@ class TestQueryBuilder(unittest.TestCase):
         qb.filter(selector)
         self.assertTrue(isinstance(qb.selection['devices'].selection,
                                    OrClause))
+
+    def test_query_builder_extract_monitoring_key(self):
+        qb = QueryBuilder(None, Rule)
+        qb.filter(Rule.key == 'foo')
+        key = extract_key_for_monitoring(qb.selection['rules'])
+        self.assertEquals(key, 'foo')

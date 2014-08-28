@@ -1,7 +1,10 @@
 import copy
+from query.selection import ScalarSelectable
 
 
 class Rule(object):
+    key = ScalarSelectable('rules', 'key')
+
     def __init__(self, name, alert_by=None, key=None, selection=None,
                  conditions=[], action=None):
         self.name = name
