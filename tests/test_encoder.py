@@ -148,16 +148,8 @@ class TestReadEncoder(unittest.TestCase):
             'search': {
                 'select': 'sensors',
                 'filters': {
-                    'devices': {
-                        'and': [
-                            {'key': 'foo'}
-                        ]
-                    },
-                    'sensors': {
-                        'and': [
-                            {'key': 'bar'}
-                        ]
-                    }
+                    'devices': {'key': 'foo'},
+                    'sensors': {'key': 'bar'}
                 }
             },
             'read': {
@@ -181,16 +173,8 @@ class TestReadEncoder(unittest.TestCase):
             'search': {
                 'select': 'sensors',
                 'filters': {
-                    'devices': {
-                        'and': [
-                            {'key': 'foo'}
-                        ]
-                    },
-                    'sensors': {
-                        'and': [
-                            {'key': 'bar'}
-                        ]
-                    }
+                    'devices': {'key': 'foo'},
+                    'sensors': {'key': 'bar'}
                 }
             },
             'fold': {
@@ -256,7 +240,7 @@ class TestReadEncoder(unittest.TestCase):
     def test_query_builder_to_device_search(self):
         qb = QueryBuilder(self.client, Device)
         qb.filter(Device.key == 'foo').read()
-        expected = '{"search": {"filters": {"sensors": {}, "devices": {"and": [{"key": "foo"}]}}, "select": "devices"}, "find": {"quantifier": "all"}}'
+        expected = '{"search": {"filters": {"sensors": {}, "devices": {"key": "foo"}}, "select": "devices"}, "find": {"quantifier": "all"}}'
         self.client.endpoint.pool.get.assert_called_once_with(
             'http://test.tempo-iq.com/v2/devices/',
             data=expected,

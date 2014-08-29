@@ -60,3 +60,11 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(selector.selectors[1].selectors[0].selection_type,
                           'devices')
         self.assertEquals(selector.selectors[1].selectors[0].key, 'key')
+
+    def test_decode_basic_selection(self):
+        j = {"key": "foo"}
+        selection = decode_selection(j)
+        print selection.selection
+        self.assertEquals(selection.selection.selection_type, 'devices')
+        self.assertEquals(selection.selection.key, 'key')
+        self.assertEquals(selection.selection.value, 'foo')

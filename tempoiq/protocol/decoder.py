@@ -42,7 +42,7 @@ def decode_selection(selection, selection_type='devices'):
         if k in ['and', 'or']:
             selector = decode_compound_clause(selection[k], selection_type, k)
         else:
-            selector = decode_scalar_selector(selection[k], selection_type)
+            selector = decode_scalar_selector(selection, selection_type)
         s.add(selector)
     return s
 

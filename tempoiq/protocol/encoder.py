@@ -1,5 +1,5 @@
 import json
-from query.selection import AndClause
+from query.selection import AndClause, Compound
 
 
 class TempoIQEncoder(json.JSONEncoder):
@@ -184,6 +184,9 @@ class ReadEncoder(TempoIQEncoder):
     def encode_selection(self, selection):
         if selection.selection is None:
             return {}
-        if len(selection.selection.selectors) == 0:
-            return {}
-        return self.encode_compound_clause(selection.selection)
+        if isinstance(selection.selection, Compound):
+            if len(selection.selection.selectors) == 0:
+                return {}
+            else:
+                return self.encode_compound_clause(selection.selection)
+        return self.encode_scalar_selector(selection.selection)

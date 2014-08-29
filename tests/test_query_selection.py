@@ -55,7 +55,7 @@ class TestSelectionObjects(unittest.TestCase):
         selection = Selection()
         selector = ScalarSelector('devices', 'foo', 'bar')
         selection.add(selector)
-        self.assertTrue(isinstance(selection.selection, AndClause))
+        self.assertTrue(isinstance(selection.selection, ScalarSelector))
 
     def test_and_clause_must_be_of_uniform_type(self):
         selectors = [Device.key == 'foo', Sensor.key == 'bar']

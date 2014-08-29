@@ -63,13 +63,15 @@ class Selection(object):
 
     def add(self, selector):
         if self.selection is None:
+            self.selection = selector
+        else:
             if issubclass(selector.__class__, Compound):
-                self.selection = selector
+                self.selection.add(selector)
             else:
                 clause = AndClause()
+                clause.add(self.selection)
                 clause.add(selector)
                 self.selection = clause
-        else:
             self.selection.add(selector)
 
 

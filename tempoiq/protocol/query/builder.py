@@ -9,10 +9,13 @@ DEVICEMSG = 'Pipeline functions passed to device reads have no effect'
 
 
 def extract_key_for_monitoring(selection):
-    if len(selection.selection.selectors) > 1:
-        msg = 'monitoring rules may only be read out by one key at a time'
-        raise ValueError(msg)
-    return selection.selection.selectors[0].value
+    if hasattr(selection.selection, 'selectors'):
+        if len(selection.selection.selectors) > 1:
+            msg = 'monitoring rules may only be read out by one key at a time'
+            raise ValueError(msg)
+        return selection.selection.selectors[0].value
+    else:
+        return selection.selection.value
 
 
 class QueryBuilder(object):
