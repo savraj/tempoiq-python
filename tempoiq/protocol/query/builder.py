@@ -2,6 +2,7 @@ import warnings
 import exceptions
 from selection import Selection, ScalarSelector, OrClause, AndClause
 from functions import *
+from tempoiq.protocol import Rule
 
 
 PIPEMSG = 'Pipeline functions passed to monitor call currently have no effect'
@@ -100,3 +101,9 @@ class QueryBuilder(object):
         else:
             msg = 'Only sensors, devices, and rules can be selected'
             raise TypeError(msg)
+
+    def usage(self):
+        if not isinstance(self.object_type, Rule):
+            raise TypeError('Usage only applies to monitoring rules')
+        key = extract_key_for_monitoring(self.selection['rules'])
+        return self.client.monitoring_client.get_usage(key)

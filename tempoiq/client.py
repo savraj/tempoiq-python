@@ -89,6 +89,10 @@ class MonitoringClient(object):
 
     def get_rule(self, key):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/' + key)
+        return RuleResponse(self.endpoint.get(url), self)
+
+    def get_usage(self, key):
+        url = urlparse.urljoin(self.endpoint.base_url, 'monitors/usage/' + key)
         self.endpoint.get(url)
 
 
@@ -105,10 +109,6 @@ class Client(object):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(device, default=self.create_encoder.default)
         self.endpoint.post(url, j)
-
-    def get_rule(self, key):
-        url = urlparse.urljoin(self.endpoint.base_url, 'monitors/' + key)
-        return RuleResponse(self.endpoint.get(url), self)
 
     def monitor(self, rule):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
