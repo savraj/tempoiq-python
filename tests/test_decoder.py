@@ -1,4 +1,5 @@
 import unittest
+from tempoiq.protocol.query.selection import AndClause
 from tempoiq.protocol.decoder import *
 
 
@@ -37,7 +38,7 @@ class TestTempoIQDecoder(unittest.TestCase):
             {"attributes": {"bar": "baz"}}
         ]
         selector = decode_compound_clause(j, t='and')
-        self.assertEquals(selector.__class__.__name__, 'AndClause')
+        self.assertTrue(isinstance(selector, AndClause))
         self.assertEquals(selector.selectors[0].selection_type, 'devices')
         self.assertEquals(selector.selectors[0].key, 'key')
         self.assertEquals(selector.selectors[1].selection_type, 'devices')
@@ -64,7 +65,24 @@ class TestTempoIQDecoder(unittest.TestCase):
     def test_decode_basic_selection(self):
         j = {"key": "foo"}
         selection = decode_selection(j)
-        print selection.selection
         self.assertEquals(selection.selection.selection_type, 'devices')
         self.assertEquals(selection.selection.key, 'key')
         self.assertEquals(selection.selection.value, 'foo')
+
+    def test_decode_compound_selection(self):
+        j = {
+            "and": [
+                {"key": "foo"},
+                {"key": "bar"}
+            ]
+        }
+        selection = decode_selection(j)
+        self.assertTrue(isinstance(selection.selection, AndClause))
+        self.assertEquals(selection.selection.selectors[0].selection_type,
+                          'devices')
+        self.assertEquals(selection.selection.selectors[0].key, 'key')
+        self.assertEquals(selection.selection.selectors[0].value, 'foo')
+        self.assertEquals(selection.selection.selectors[1].selection_type,
+                          'devices')
+        self.assertEquals(selection.selection.selectors[1].key, 'key')
+        self.assertEquals(selection.selection.selectors[1].value, 'bar')
