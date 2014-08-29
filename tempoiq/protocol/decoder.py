@@ -60,13 +60,13 @@ class TempoIQDecoder(object):
         return dct
 
     def decode_rule(self, rule):
-        name = rule['name']
-        key = rule['key']
+        name = rule['rule']['name']
+        key = rule['rule']['key']
         alert_by = rule['alerts']
-        action = Webhook(rule['action']['url'])
+        action = Webhook(rule['rule']['action']['url'])
 
         conditions = []
-        for c in rule['conditions']:
+        for c in rule['rule']['conditions']:
             trigger = Trigger(c['trigger']['name'],
                               c['trigger']['arguments'])
             filters = []

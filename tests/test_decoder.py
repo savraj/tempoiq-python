@@ -93,3 +93,52 @@ class TestTempoIQDecoder(unittest.TestCase):
         decoder = TempoIQDecoder()
         decoded = json.loads(j, object_hook=decoder)
         self.assertEquals(decoded, {'foo': 'bar'})
+
+    def test_decoder_for_rule(self):
+        search = {
+            'select': 'sensors',
+            'filters': {
+                'devices': {'key': 'foo'},
+                'sensors': {'key': 'bar'}
+            }
+        }
+        rule = {
+            'name': 'one rule to rule them all',
+            'key': 'foo',
+            'action': {
+                'url': 'http://www.foo.bar'
+            },
+            'conditions': [
+                {
+                    'trigger': {
+                        'name': 'exp_moving_average',
+                        'arguments': [
+                            'static',
+                            'lt',
+                            '300',
+                            '5'
+                        ]
+                    },
+                    'filter': {
+                        'and': [
+                            {
+                                'operation': 'select',
+                                'type': 'device_key',
+                                'arguments': ['foo']
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        j = {
+            'rule': rule,
+            'search': search,
+            'alerts': 'any'
+        }
+        decoder = TempoIQDecoder()
+        decoded = json.loads(json.dumps(j), object_hook=decoder)
+        self.assertEquals(decoded.alert_by, 'any')
+        self.assertEquals(decoded.key, 'foo')
+        self.assertEquals(len(decoded.conditions), 1)
+        self.assertTrue(isinstance(decoded.action, Webhook))
