@@ -52,7 +52,7 @@ class TempoIQDecoder(object):
         pass
 
     def __call__(self, dct):
-        self.decode(dct)
+        return self.decode(dct)
 
     def decode(self, dct):
         if dct.get('rule'):

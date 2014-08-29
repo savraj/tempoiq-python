@@ -1,4 +1,5 @@
 import unittest
+import json
 from tempoiq.protocol.query.selection import AndClause
 from tempoiq.protocol.decoder import *
 
@@ -86,3 +87,9 @@ class TestTempoIQDecoder(unittest.TestCase):
                           'devices')
         self.assertEquals(selection.selection.selectors[1].key, 'key')
         self.assertEquals(selection.selection.selectors[1].value, 'bar')
+
+    def test_decoder_leaves_unrecognized_objects_alone(self):
+        j = """{"foo": "bar"}"""
+        decoder = TempoIQDecoder()
+        decoded = json.loads(j, object_hook=decoder)
+        self.assertEquals(decoded, {'foo': 'bar'})
