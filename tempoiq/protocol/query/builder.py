@@ -48,6 +48,18 @@ class QueryBuilder(object):
         self.pipeline.append(Aggregation(function))
         return self
 
+    def annotations(self):
+        if not isinstance(self.object_type, Rule):
+            raise TypeError('Annotations only applies to monitoring rules')
+        key = extract_key_for_monitoring(self.selection['rules'])
+        return self.client.monitoring_client.get_annotations(key)
+
+    def changes(self):
+        if not isinstance(self.object_type, Rule):
+            raise TypeError('Changes only applies to monitoring rules')
+        key = extract_key_for_monitoring(self.selection['rules'])
+        return self.client.monitoring_client.get_changelog(key)
+
     def convert_timezone(self, tz):
         self.pipeline.append(ConvertTZ(tz))
         return self
@@ -65,6 +77,12 @@ class QueryBuilder(object):
     def interpolate(self, function, period):
         self.pipeline.append(Interpolation(function, period))
         return self
+
+    def logs(self):
+        if not isinstance(self.object_type, Rule):
+            raise TypeError('Logs only applies to monitoring rules')
+        key = extract_key_for_monitoring(self.selection['rules'])
+        return self.client.monitoring_client.get_logs(key)
 
     def monitor(self, rule):
         if self.pipeline:
