@@ -1,5 +1,6 @@
 import json
 from protocol.cursor import DataPointCursor
+from protocol.decoder import TempoIQDecoder
 
 
 SUCCESS = 0
@@ -73,3 +74,13 @@ class SensorPointsResponse(Response):
 
     def parse(self, body):
         self.data = DataPointCursor(json.loads(body), self)
+
+
+class RuleResponse(Response):
+    def __init__(self, resp, session):
+        super(SensorPointsResponse, self).__init__(resp, session)
+        self.parse(self.body)
+
+    def parse(self, body):
+        decoder = TempoIQDecoder()
+        self.data = json.loads(body, object_hook=decoder)

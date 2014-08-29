@@ -7,6 +7,7 @@ import protocol
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, ResponseException
+from response import RuleResponse
 
 
 def make_series_url(key):
@@ -104,6 +105,10 @@ class Client(object):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(device, default=self.create_encoder.default)
         self.endpoint.post(url, j)
+
+    def get_rule(self, key):
+        url = urlparse.urljoin(self.endpoint.base_url, 'monitors/' + key)
+        return RuleResponse(self.endpoint.get(url), self)
 
     def monitor(self, rule):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')

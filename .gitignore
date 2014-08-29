@@ -4,6 +4,7 @@
 *.db
 *.pid
 *.swp
+*.swo
 .ropeproject/
 .coverage
 .DS_Store

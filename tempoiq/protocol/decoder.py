@@ -27,7 +27,7 @@ def decode_compound_clause(selectors, selection_type='devices', t='and'):
     for s in selectors:
         subt = s.keys()[0]
         if subt in ['and', 'or']:
-            subclause = decode_compound_clause(selectors, selection_type, subt)
+            subclause = decode_compound_clause(s[subt], selection_type, subt)
             clause.add(subclause)
         else:
             parsed = decode_scalar_selector(s, selection_type)
@@ -57,6 +57,7 @@ class TempoIQDecoder(object):
     def decode(self, dct):
         if dct.get('rule'):
             return self.decode_rule(dct)
+        return dct
 
     def decode_rule(self, rule):
         name = rule['name']
