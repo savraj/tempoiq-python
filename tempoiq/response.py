@@ -1,3 +1,7 @@
+import json
+from protocol.cursor import DataPointCursor
+
+
 SUCCESS = 0
 FAILURE = 1
 PARTIAL = 2
@@ -64,8 +68,8 @@ class Response(object):
 
 class SensorPointsResponse(Response):
     def __init__(self, resp, session):
-        super(Response, self).__init__(resp, session)
+        super(SensorPointsResponse, self).__init__(resp, session)
         self.parse(self.body)
 
     def parse(self, body):
-        pass
+        self.data = DataPointCursor(json.loads(body), self)

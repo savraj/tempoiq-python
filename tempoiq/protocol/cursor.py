@@ -1,5 +1,5 @@
 import json
-from tempoiq.temporal.validate import convert_iso_stamp
+from row import Row
 
 
 def make_generator(d):
@@ -77,11 +77,8 @@ class DataPointCursor(Cursor):
 
     def __init__(self, data, response):
         self.response = response
-        self.rollup = data.get('rollup')
-        self.start = convert_iso_stamp(data.get('start'))
-        self.end = convert_iso_stamp(data.get('end'))
         self.data = make_generator(
-            [Row(d, self.response) for d in data['data']])
+            [Row(d) for d in data['data']])
 
     def _fetch_next(self):
         try:
@@ -97,4 +94,4 @@ class DataPointCursor(Cursor):
         check_response(self.response)
         j = json.loads(n.text)
         self.data = make_generator(
-            [self.type(d, self.response, tz=self.tz) for d in j['data']])
+            [Row(d) for d in j['data']])

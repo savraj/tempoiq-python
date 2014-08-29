@@ -55,7 +55,16 @@ class WriteEncoder(TempoIQEncoder):
             'name': rule.name,
             'alerts': rule.alert_by,
             'actions': [self.default(rule.action)],
-            'selection': read_encoder.default(rule.selection)
+            'selection': {
+                'search': {
+                    'filters': {
+                        'devices': read_encoder.default(
+                            rule.selection['devices']),
+                        'sensors': read_encoder.default(
+                            rule.selection['sensors'])
+                    }
+                }
+            }
         }
 
         if rule.key is not None:

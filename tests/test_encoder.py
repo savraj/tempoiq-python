@@ -1,6 +1,7 @@
 import unittest
 import json
 import datetime
+import mock
 from tempoiq.protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from tempoiq.protocol import Sensor, Device, Point, Rule
 from tempoiq.protocol.query.selection import *
@@ -87,6 +88,7 @@ class TestReadEncoder(unittest.TestCase):
     def setUp(self):
         self.client = get_session('http://test.tempo-iq.com/', 'foo', 'bar')
         monkeypatch_requests(self.client.endpoint)
+        setattr(self.client, 'read', mock.Mock())
 
     def test_encode_scalar_selector(self):
         selector = Device.key == 'foo'

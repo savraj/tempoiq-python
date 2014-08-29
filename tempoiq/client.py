@@ -6,7 +6,7 @@ import endpoint
 import protocol
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
-from response import Response, ResponseException
+from response import Response, SensorPointsResponse, ResponseException
 
 
 def make_series_url(key):
@@ -116,7 +116,8 @@ class Client(object):
     def read(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
-        self.endpoint.get(url, j)
+        resp = self.endpoint.get(url, j)
+        return SensorPointsResponse(resp, self.endpoint)
 
     def search_devices(self, query, size=5000):
         #TODO - actually use the size param
