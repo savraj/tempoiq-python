@@ -155,7 +155,7 @@ class Client(object):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        return DeviceResponse(self.endpoint.get(url, j))
+        return DeviceResponse(self.endpoint.get(url, j), self.endpoint)
 
     def write(self, write_request):
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')

@@ -69,7 +69,7 @@ class Response(object):
 
 class DeviceResponse(Response):
     def __init__(self, resp, session):
-        super(SensorPointsResponse, self).__init__(resp, session)
+        super(DeviceResponse, self).__init__(resp, session)
         self.parse(self.body)
 
     def parse(self, body):
@@ -87,7 +87,7 @@ class SensorPointsResponse(Response):
 
 class RuleResponse(Response):
     def __init__(self, resp, session):
-        super(SensorPointsResponse, self).__init__(resp, session)
+        super(RuleResponse, self).__init__(resp, session)
         self.parse(self.body)
 
     def parse(self, body):
