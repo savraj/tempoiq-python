@@ -67,6 +67,15 @@ class Response(object):
         self.data = None
 
 
+class DeviceResponse(Response):
+    def __init__(self, resp, session):
+        super(SensorPointsResponse, self).__init__(resp, session)
+        self.parse(self.body)
+
+    def parse(self, body):
+        self.data = json.loads(body)
+
+
 class SensorPointsResponse(Response):
     def __init__(self, resp, session):
         super(SensorPointsResponse, self).__init__(resp, session)

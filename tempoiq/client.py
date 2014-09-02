@@ -7,7 +7,7 @@ import protocol
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, ResponseException
-from response import RuleResponse
+from response import RuleResponse, DeviceResponse
 
 
 def make_series_url(key):
@@ -113,6 +113,10 @@ class MonitoringClient(object):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/usage/' + key)
         return self.endpoint.get(url)
 
+    def list_rules(self):
+        url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
+        return RuleResponse(self.endpoint.get(url), self)
+
 
 class Client(object):
     write_encoder = WriteEncoder()
@@ -151,7 +155,7 @@ class Client(object):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        self.endpoint.get(url, j)
+        return DeviceResponse(self.endpoint.get(url, j))
 
     def write(self, write_request):
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')
