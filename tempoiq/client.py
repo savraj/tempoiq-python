@@ -87,6 +87,10 @@ class MonitoringClient(object):
     def __init__(self, endpoint):
         self.endpoint = endpoint
 
+    def delete_rule(self, key):
+        url = urlparse.urljoin(self.endpoint.base_url, 'monitors/' + key)
+        return self.endpoint.delete(url)
+
     def get_annotations(self, key):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/annotations/' + key)
@@ -124,6 +128,11 @@ class Client(object):
         j = json.dumps(device, default=self.create_encoder.default)
         self.endpoint.post(url, j)
 
+    def delete_device(self, query):
+        url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
+        j = json.dumps(query, default=self.create_encoder.default)
+        self.endpoint.delete(url, j)
+
     def monitor(self, rule):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
         rule_json = json.dumps(rule, default=self.write_encoder.default)
@@ -146,5 +155,6 @@ class Client(object):
 
     def write(self, write_request):
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')
-        self.endpoint.post(url, json.dumps(write_request,
-                                           default=self.write_encoder.default))
+        default = self.write_encoder.default
+        return self.endpoint.post(url, json.dumps(write_request,
+                                                  default=default))
