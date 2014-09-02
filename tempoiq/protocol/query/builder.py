@@ -65,11 +65,12 @@ class QueryBuilder(object):
         return self
 
     def delete(self):
-        if isinstance(self.object_type, Device):
-            self.client.delete_device(self, query)
-        elif isinstance(self.object_type, Sensor):
+        if self.object_type == 'devices':
+            self.operation = APIOperation('find', {'quantifier': 'all'})
+            self.client.delete_device(self)
+        elif self.object_type == 'sensors':
             raise TypeError('Deleting sensors not supported')
-        elif isinstance(self.object_type, Rule):
+        elif self.object_type == 'rules':
             key = extract_key_for_monitoring(self.selection['rules'])
             self.client.monitoring_client.delete_rule(key)
 

@@ -134,7 +134,7 @@ class Client(object):
 
     def delete_device(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
-        j = json.dumps(query, default=self.create_encoder.default)
+        j = json.dumps(query, default=self.read_encoder.default)
         self.endpoint.delete(url, j)
 
     def monitor(self, rule):
