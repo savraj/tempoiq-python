@@ -80,7 +80,7 @@ class HTTPEndpoint(object):
         resp = self.pool.get(to_hit, data=body, auth=self.auth)
         return resp
 
-    def delete(self, url):
+    def delete(self, url, body=''):
         """Perform a DELETE request to the given resource with the given.  The
         "url" argument will be joined to the base URL this object was
         initialized with.
@@ -89,7 +89,7 @@ class HTTPEndpoint(object):
         :rtype: requests.Response object"""
 
         to_hit = urlparse.urljoin(self.base_url, url)
-        resp = self.pool.delete(to_hit, auth=self.auth)
+        resp = self.pool.delete(to_hit, data=body, auth=self.auth)
         return resp
 
     def put(self, url, body):
