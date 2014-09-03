@@ -23,6 +23,13 @@ class TestQueryBuilder(unittest.TestCase):
         self.assertTrue(isinstance(qb.selection['sensors'].selection,
                                    ScalarSelector))
 
+    def test_query_builder_chained_dict_filter(self):
+        qb = QueryBuilder(None, Sensor)
+        qb.filter(Device.attributes['foo'] == 'bar').filter(
+            Device.attributes['baz'] == 'boz')
+        self.assertTrue(isinstance(qb.selection['devices'].selection,
+                                   AndClause))
+
     def test_query_builder_or_clause(self):
         qb = QueryBuilder(None, Sensor)
         selector = or_([Device.key == 'foo', Device.key == 'bar'])

@@ -72,7 +72,6 @@ class Selection(object):
                 clause.add(self.selection)
                 clause.add(selector)
                 self.selection = clause
-            self.selection.add(selector)
 
 
 def and_(selectors):

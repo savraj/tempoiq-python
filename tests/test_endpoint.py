@@ -102,4 +102,5 @@ class TestEndpoint(unittest.TestCase):
         self.end.delete(url)
         self.end.pool.delete.assert_called_once_with(
             'http://www.nothing.com/v2/series/',
+            data='',
             auth=self.end.auth)
