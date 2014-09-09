@@ -170,9 +170,13 @@ class ReadEncoder(TempoIQEncoder):
             builder.operation.name: builder.operation.args
         }
 
-        if not j['search']['filters']['devices'] and \
-                not j['search']['filters']['sensors']:
-            j['search']['filters'] = {}
+        if not j['search']['filters']['devices']:
+            if not j['search']['filters']['sensors']:
+                j['search']['filters'] = {}
+        else:
+            if not j['search']['filters']['sensors']:
+                j['search']['filters']['sensors'] = 'all'
+
         if len(builder.pipeline) > 0:
             j['fold'] = {
                 'functions': map(self.encode_function, builder.pipeline)

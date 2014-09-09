@@ -130,17 +130,17 @@ class Client(object):
     def create_device(self, device):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(device, default=self.create_encoder.default)
-        self.endpoint.post(url, j)
+        return self.endpoint.post(url, j)
 
     def delete_device(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        self.endpoint.delete(url, j)
+        return self.endpoint.delete(url, j)
 
     def monitor(self, rule):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
         rule_json = json.dumps(rule, default=self.write_encoder.default)
-        self.endpoint.post(url, rule_json)
+        return self.endpoint.post(url, rule_json)
 
     def query(self, object_type):
         return QueryBuilder(self, object_type)
