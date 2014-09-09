@@ -18,17 +18,20 @@ class MonitoringClient(object):
     def get_annotations(self, key):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/annotations/' + key)
-        return self.endpoint.get(url)
+        resp = self.endpoint.get(url)
+        return Response(resp, self.endpoint)
 
     def get_changelog(self, key):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/%s/changes/' % key)
-        return self.endpoint.get(url)
+        resp = self.endpoint.get(url)
+        return Response(resp, self.endpoint)
 
     def get_logs(self, key):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/%s/logs/' % key)
-        return self.endpoint.get(url)
+        resp = self.endpoint.get(url)
+        return Response(resp, self.endpoint)
 
     def get_rule(self, key):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/' + key)
@@ -37,7 +40,8 @@ class MonitoringClient(object):
     def get_usage(self, key):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/%s/usage/' % key)
-        return self.endpoint.get(url)
+        resp = self.endpoint.get(url)
+        return Response(resp, self.endpoint)
 
     def list_rules(self):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
