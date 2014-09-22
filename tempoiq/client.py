@@ -60,7 +60,8 @@ class Client(object):
     def create_device(self, device):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(device, default=self.create_encoder.default)
-        return self.endpoint.post(url, j)
+        resp = self.endpoint.post(url, j)
+        return Response(resp, self.endpoint)
 
     def delete_device(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')

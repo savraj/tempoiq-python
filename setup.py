@@ -29,7 +29,8 @@ setup(
     author_email="aaron.brenzel@tempoiq.com",
     url="http://github.com/tempoiq/tempoiq-python/",
     description="A client for the TempoDB API",
-    packages=["tempoiq", "tempoiq.temporal", "tempoiq.protocol"],
+    packages=["tempoiq", "tempoiq.temporal", "tempoiq.protocol",
+              "tempoiq.protocol.query"],
     long_description="A Python client for the TempoIQ API.",
     dependency_links=[
     ],
