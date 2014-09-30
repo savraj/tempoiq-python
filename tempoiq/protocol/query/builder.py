@@ -20,6 +20,8 @@ def extract_key_for_monitoring(selection):
 
 
 class QueryBuilder(object):
+    """Class to build queries"""
+
     def __init__(self, client, object_type):
         self.client = client
         self.object_type = object_type.__name__.lower() + 's'

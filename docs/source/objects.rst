@@ -1,8 +1,8 @@
 Domain Objects
 ==============
 
-The :mod:`tempodb.protocol.objects` module contains definitions for all the 
-domain objects in the TempoDB API.
+The :mod:`tempoiq.protocol.objects` module contains definitions for all the 
+domain objects in the TempoIQ API.
 
-.. automodule:: tempodb.protocol.objects
+.. automodule:: tempoiq.protocol
    :members:

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-tempodb/setup.py
+tempoiq-python/setup.py
 
-Copyright (c) 2012 TempoDB Inc. All rights reserved.
+Copyright (c) 2012-2014 TempoDB Inc. All rights reserved.
 """
 
 from setuptools import setup
@@ -28,10 +28,10 @@ setup(
     author="TempoIQ Inc",
     author_email="aaron.brenzel@tempoiq.com",
     url="http://github.com/tempoiq/tempoiq-python/",
-    description="A client for the TempoDB API",
+    description="Python bindings for the TempoIQ API",
     packages=["tempoiq", "tempoiq.temporal", "tempoiq.protocol",
               "tempoiq.protocol.query"],
-    long_description="A Python client for the TempoIQ API.",
+    long_description="Python bindings for the TempoIQ API",
     dependency_links=[
     ],
     setup_requires=['nose>=1.0'],

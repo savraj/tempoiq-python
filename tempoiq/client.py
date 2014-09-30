@@ -49,6 +49,12 @@ class MonitoringClient(object):
 
 
 class Client(object):
+    """Entry point for all TempoIQ API calls.
+
+    :param endpoint: backend and credentials to connect to
+    :type endpoint: tempoiq.endpoint.HTTPEndpoint
+    """
+
     write_encoder = WriteEncoder()
     create_encoder = CreateEncoder()
     read_encoder = ReadEncoder()
@@ -58,12 +64,23 @@ class Client(object):
         self.monitoring_client = MonitoringClient(self.endpoint)
 
     def create_device(self, device):
+        """Create a new device
+
+        :param device:
+        :type device: tempoiq.protocol.device.Device
+        :rtype: :class:`tempoiq.response.Response` with a
+                :class:`tempoiq.protocol.device.Device` data payload"""
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(device, default=self.create_encoder.default)
         resp = self.endpoint.post(url, j)
         return Response(resp, self.endpoint)
 
     def delete_device(self, query):
+        """Delete devices that match the provided query.
+
+        :param query:
+        :type query: tempoiq.protocol.query.builder.QueryBuilder
+        :rtype: :class:`tempoiq.response.Response`"""
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
         resp = self.endpoint.delete(url, j)
@@ -79,6 +96,7 @@ class Client(object):
         return QueryBuilder(self, object_type)
 
     def read(self, query):
+        """Read sensor data"""
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
         resp = self.endpoint.get(url, j)

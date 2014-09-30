@@ -1,8 +1,8 @@
 Datetime Utilities
 ==================
 
-The :mod:`tempodb.temporal.validate` module contains utilities for datetime and 
+The :mod:`tempoiq.temporal.validate` module contains utilities for datetime and 
 timezone handling.
 
-.. automodule:: tempodb.temporal.validate
+.. automodule:: tempoiq.temporal.validate
    :members:

@@ -1,7 +1,7 @@
 Cursors
 =======
 
-The :mod:`tempodb.protocol.cursor` module contaions functionality for working 
+The :mod:`tempoiq.protocol.cursor` module contaions functionality for working 
 with database cursors.  Each :class:`Cursor` object is a standard Python 
 iterable that represents a one-time use array of data from the TempoDB API 
 (i.e. after you have iterated through a cursor, you must make another API call 
@@ -14,5 +14,5 @@ to read the data again)::
   >>> data2
   []
 
-.. automodule:: tempodb.protocol.cursor
+.. automodule:: tempoiq.protocol.cursor
    :members:
