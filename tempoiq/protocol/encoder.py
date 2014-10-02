@@ -153,7 +153,7 @@ class ReadEncoder(TempoIQEncoder):
     def encode_function(self, function):
         return {
             'name': function.name,
-            'args': function.args
+            'arguments': function.args
         }
 
     def encode_query_builder(self, builder):

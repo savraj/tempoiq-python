@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# TempoDB Python API documentation build configuration file, created by
+# TempoIQ Python API documentation build configuration file, created by
 # sphinx-quickstart on Wed Dec 18 15:48:58 2013.
 #
 # This file is execfile()d with the current directory set to its
@@ -50,8 +50,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'TempoDB Python API'
-copyright = u'2013, TempoDB Inc.'
+project = u'TempoIQ Python Library'
+copyright = u'2014, TempoIQ Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -183,7 +183,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'TempoDBPythonAPIdoc'
+htmlhelp_basename = 'TempoIQPythonAPIdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -203,7 +203,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'TempoDBPythonAPI.tex', u'TempoDB Python API Documentation',
+  ('index', 'TempoIQPythonAPI.tex', u'TempoIQ Python Library Documentation',
    u'Aaron Brenzel', 'manual'),
 ]
 
@@ -233,7 +233,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'tempodbpythonapi', u'TempoDB Python API Documentation',
+    ('index', 'tempoiqpythonapi', u'TempoIQ Python API Documentation',
      [u'Aaron Brenzel'], 1)
 ]
 
@@ -247,8 +247,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'TempoDBPythonAPI', u'TempoDB Python API Documentation',
-   u'Aaron Brenzel', 'TempoDBPythonAPI', 'One line description of project.',
+  ('index', 'TempoIQPythonAPI', u'TempoIQ Python API Documentation',
+   u'Aaron Brenzel', 'TempoIQPythonAPI', 'One line description of project.',
    'Miscellaneous'),
 ]
 

@@ -3,7 +3,7 @@ import urlparse
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse
-from response import RuleResponse, DeviceResponse
+from response import RuleResponse, DeviceResponse, DeviceCursorResponse
 
 
 class MonitoringClient(object):
@@ -49,6 +49,12 @@ class MonitoringClient(object):
 
 
 class Client(object):
+    """Entry point for all TempoIQ API calls.
+
+    :param endpoint: backend and credentials to connect to
+    :type endpoint: tempoiq.endpoint.HTTPEndpoint
+    """
+
     write_encoder = WriteEncoder()
     create_encoder = CreateEncoder()
     read_encoder = ReadEncoder()
@@ -58,12 +64,23 @@ class Client(object):
         self.monitoring_client = MonitoringClient(self.endpoint)
 
     def create_device(self, device):
+        """Create a new device
+
+        :param device:
+        :type device: :class:`~tempoiq.protocol.device.Device`
+        :rtype: :class:`tempoiq.response.Response` with a
+                :class:`tempoiq.protocol.device.Device` data payload"""
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(device, default=self.create_encoder.default)
         resp = self.endpoint.post(url, j)
         return Response(resp, self.endpoint)
 
     def delete_device(self, query):
+        """Delete devices that match the provided query.
+
+        :param query:
+        :type query: :class:`tempoiq.protocol.query.builder.QueryBuilder`
+        :rtype: :class:`tempoiq.response.Response`"""
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
         resp = self.endpoint.delete(url, j)
@@ -76,6 +93,10 @@ class Client(object):
         return RuleResponse(resp, self.endpoint)
 
     def query(self, object_type):
+        """Begin to build a query on the given object type.
+
+        :param object_type: Either :class:`~tempoiq.protocol.device.Device` or :class:`~tempoiq.protocol.sensor.Sensor`
+        :rtype: :class:`~tempoiq.protocol.query.builder.QueryBuilder`"""
         return QueryBuilder(self, object_type)
 
     def read(self, query):
@@ -88,9 +109,17 @@ class Client(object):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        return DeviceResponse(self.endpoint.get(url, j), self.endpoint)
+        return DeviceCursorResponse(self.endpoint.get(url, j), self.endpoint)
 
     def write(self, write_request):
+        """Write data points to one or more devices and sensors.
+
+        The write_request argument is a dict which maps device keys to device data.
+        The device data is itself a dict mapping sensor key to a list of
+        :class:`tempoiq.protocol.point.Point`
+
+        :param dict write_request:
+        """
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')
         default = self.write_encoder.default
         resp = self.endpoint.post(url, json.dumps(write_request,

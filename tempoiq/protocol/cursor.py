@@ -1,5 +1,6 @@
 import json
 from row import Row
+from decoder import DeviceDecoder
 
 
 def make_generator(d):
@@ -32,7 +33,7 @@ class Cursor(object):
     """An iterable cursor over data retrieved from the TempoDB API.  The
     cursor will make network requests to fetch more data as needed, until
     the API returns no more data.  It can be used with the standard
-    iterable interface:
+    iterable interface::
 
         >>> data = [d for d in response.data]"""
 
@@ -51,6 +52,17 @@ class Cursor(object):
                 self._fetch_next()
 
     def _fetch_next(self):
+        raise StopIteration
+
+
+class DeviceCursor(Cursor):
+    def __init__(self, data, response):
+        self.response = response
+        obj = json.loads(data, object_hook=DeviceDecoder())
+        self.data = make_generator(obj['data'])
+
+    def _fetch_next(self):
+        # Cursoring not yet supported
         raise StopIteration
 
 
