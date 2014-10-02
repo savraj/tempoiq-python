@@ -1,20 +1,20 @@
 # TempoIQ Python API Library
 
-The TempoDB Python API Client makes calls to the [TempoIQ API](http://tempoiq.com/).  The module is not yet available on PyPI, so you must install it directly from source:
+The TempoIQ Python API Client makes calls to the [TempoIQ API](http://tempoiq.com/).  The module is not yet available on PyPI, so you must install it directly from source:
 
-    cd tempodb-python
+    cd tempoiq-python
     python setup.py install
 
 
 Run unit tests:
 
-    cd path/to/tempodb-python
+    cd path/to/tempoiq-python
     python setup.py nosetests
 
 
 Build documentation:
 
-    cd path/to/tempodb-python/docs
+    cd path/to/tempoiq-python/docs
     make html
     cd build
     firefox index.html
