@@ -67,7 +67,7 @@ class Client(object):
         """Create a new device
 
         :param device:
-        :type device: tempoiq.protocol.device.Device
+        :type device: :class:`~tempoiq.protocol.device.Device`
         :rtype: :class:`tempoiq.response.Response` with a
                 :class:`tempoiq.protocol.device.Device` data payload"""
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
@@ -79,7 +79,7 @@ class Client(object):
         """Delete devices that match the provided query.
 
         :param query:
-        :type query: tempoiq.protocol.query.builder.QueryBuilder
+        :type query: :class:`tempoiq.protocol.query.builder.QueryBuilder`
         :rtype: :class:`tempoiq.response.Response`"""
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
@@ -93,12 +93,16 @@ class Client(object):
         return RuleResponse(resp, self.endpoint)
 
     def query(self, object_type):
+        """Begin to build a query on the given object type.
+
+        :param object_type: Either :class:`~tempoiq.protocol.device.Device` or :class:`~tempoiq.protocol.sensor.Sensor`
+        :rtype: :class:`~tempoiq.protocol.query.builder.QueryBuilder`"""
         return QueryBuilder(self, object_type)
 
     def read(self, query):
-        """Read sensor data"""
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
+        print("READ REQUEST: ", j)
         resp = self.endpoint.get(url, j)
         return SensorPointsResponse(resp, self.endpoint)
 
@@ -109,6 +113,14 @@ class Client(object):
         return DeviceResponse(self.endpoint.get(url, j), self.endpoint)
 
     def write(self, write_request):
+        """Write data points to one or more devices and sensors.
+
+        The write_request argument is a dict which maps device keys to device data.
+        The device data is itself a dict mapping sensor key to a list of
+        :class:`tempoiq.protocol.point.Point`
+
+        :param dict write_request:
+        """
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')
         default = self.write_encoder.default
         resp = self.endpoint.post(url, json.dumps(write_request,

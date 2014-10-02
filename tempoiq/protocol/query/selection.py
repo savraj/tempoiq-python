@@ -16,6 +16,12 @@ class OrClause(Compound):
 
 
 class ScalarSelector(object):
+    """A condition to filter on. The recommended way to construct a ScalarSelector
+    is with the ``==`` operator on a selectable field, e.g::
+
+        selector = (Device.attributes['model'] == "v1")
+        selector2 = (Sensor.key == "humidity")
+    """
     def __init__(self, selection_type, key, value):
         self.selection_type = selection_type
         self.key = key
@@ -75,6 +81,10 @@ class Selection(object):
 
 
 def and_(selectors):
+    """Returns a selector that's the AND of all provided selectors.
+
+    :param selectors:
+    :type selectors: List of :class:`ScalarSelector`"""
     s = AndClause()
     object_type = None
     for selector in selectors:
@@ -90,6 +100,10 @@ def and_(selectors):
 
 
 def or_(selectors):
+    """Returns a selector that's the OR of all provided selectors.
+
+    :param selectors:
+    :type selectors: List of :class:`ScalarSelector`"""
     s = OrClause()
     object_type = None
     for selector in selectors:

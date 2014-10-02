@@ -14,14 +14,12 @@ below.  The other pages document the functions and classes in the API itself.
 Contents:
 
 .. toctree::
-   examples
    client
-   endpoint
    response
    cursor
    objects
    query
-   validate
+   examples
    :maxdepth: 2
 
 

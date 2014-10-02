@@ -1,8 +1,23 @@
 Query Utilities
 ===============
 
-The :mod:`tempoiq.protocol.query` module has utilities for working with TempoIQ's
+Classes and utilities for working with TempoIQ's
 query interface.
 
-.. automodule:: tempoiq.protocol.query
+Query Builder
+-------------
+
+.. autoclass:: tempoiq.protocol.query.builder.QueryBuilder
+   :members:
+
+Query Functions
+---------------
+
+.. automodule:: tempoiq.protocol.query.functions
+   :members:
+
+Selectors
+---------
+
+.. automodule:: tempoiq.protocol.query.selection
    :members:

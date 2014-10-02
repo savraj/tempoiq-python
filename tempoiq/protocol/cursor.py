@@ -32,7 +32,7 @@ class Cursor(object):
     """An iterable cursor over data retrieved from the TempoDB API.  The
     cursor will make network requests to fetch more data as needed, until
     the API returns no more data.  It can be used with the standard
-    iterable interface:
+    iterable interface::
 
         >>> data = [d for d in response.data]"""
 
@@ -77,6 +77,7 @@ class DataPointCursor(Cursor):
 
     def __init__(self, data, response):
         self.response = response
+        print("RESPONSE: ", data)
         self.data = make_generator(
             [Row(d) for d in data['data']])
 
