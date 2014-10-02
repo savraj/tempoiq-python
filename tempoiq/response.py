@@ -70,7 +70,8 @@ class Response(object):
 class DeviceResponse(Response):
     def __init__(self, resp, session):
         super(DeviceResponse, self).__init__(resp, session)
-        self.parse(self.body)
+        if self.successful == SUCCESS:
+            self.parse(self.body)
 
     def parse(self, body):
         self.data = json.loads(body)
@@ -79,7 +80,8 @@ class DeviceResponse(Response):
 class SensorPointsResponse(Response):
     def __init__(self, resp, session):
         super(SensorPointsResponse, self).__init__(resp, session)
-        self.parse(self.body)
+        if self.successful == SUCCESS:
+            self.parse(self.body)
 
     def parse(self, body):
         self.data = DataPointCursor(json.loads(body), self)
@@ -88,7 +90,8 @@ class SensorPointsResponse(Response):
 class RuleResponse(Response):
     def __init__(self, resp, session):
         super(RuleResponse, self).__init__(resp, session)
-        self.parse(self.body)
+        if self.successful == SUCCESS:
+            self.parse(self.body)
 
     def parse(self, body):
         decoder = TempoIQDecoder()
