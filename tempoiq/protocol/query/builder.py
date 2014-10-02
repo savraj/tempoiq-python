@@ -88,7 +88,8 @@ class QueryBuilder(object):
 
     def filter(self, selector):
         """Filter the query based on the provided selector. The argument may be
-        a :class:`~tempoiq.protocol.query.selection.ScalarSelector` or the result of combining several selectors
+        a :class:`~tempoiq.protocol.query.selection.ScalarSelector` or the
+        result of combining several selectors
         with :func:`~tempoiq.protocol.query.selection.or_` or
         :func:`~tempoiq.protocol.query.selection.and_`\ .
 

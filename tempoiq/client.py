@@ -3,7 +3,7 @@ import urlparse
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse
-from response import RuleResponse, DeviceResponse
+from response import RuleResponse, DeviceResponse, DeviceCursorResponse
 
 
 class MonitoringClient(object):
@@ -102,7 +102,6 @@ class Client(object):
     def read(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
-        print("READ REQUEST: ", j)
         resp = self.endpoint.get(url, j)
         return SensorPointsResponse(resp, self.endpoint)
 
@@ -110,7 +109,7 @@ class Client(object):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        return DeviceResponse(self.endpoint.get(url, j), self.endpoint)
+        return DeviceCursorResponse(self.endpoint.get(url, j), self.endpoint)
 
     def write(self, write_request):
         """Write data points to one or more devices and sensors.

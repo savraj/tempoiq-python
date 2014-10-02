@@ -7,12 +7,11 @@ Initializing the client
 You must initialize a client object before you can make any API calls::
 
     import tempoiq.session
-    from tempoiq.client import Client
 
-    endpoint = HTTPEndpoint("https://your-url.backend.tempoiq.com",
-                            "your-key", 
-                            "your-secret")
-    client = Client(endpoint)
+    client = tempoiq.session.get_session(
+                                "https://your-url.backend.tempoiq.com",
+                                "your-key", 
+                                "your-secret")
 
 
 Creating a device
@@ -62,7 +61,7 @@ To get a list of all devices matching given filter criteria::
 
     result = client.query(Device).filter(Device.attributes["building"] == "24").read()
 
-    for dev in result.data["data"]:
+    for dev in result.data:
         print("Got device with key: {}".format(dev.key))
 
 
@@ -71,13 +70,10 @@ selectors::
 
     from tempoiq.protocol.query.selection import and_, or_
 
+    filter = or_([Device.attributes["building"] == "24", 
+                  Device.attributes["building"] == "26"])
     result = client.query(Device)
-                   .filter(or_(
-                        [
-                            Device.attributes["building"] == "24",
-                            Device.attributes["building"] == "26"
-                        ]
-                    )
+                   .filter(filter)
                    .read()
 
 
@@ -95,6 +91,12 @@ To read raw data from one or more sensors and devices::
 
     for row in result.data:
         print("Timestamp: {} Values: {}".format(row.timestamp, row.values))
+
+It's also possible to iterate through individual values in each row object::
+
+    for row in result.data:
+        for ((device, sensor), value) in row:
+            print device, sensor, value
 
 Rollups, interpolation, and aggregation can be added to the query as well::
 

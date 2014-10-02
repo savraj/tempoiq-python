@@ -191,3 +191,26 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(decoded[0].key, 'foo')
         self.assertEquals(len(decoded[0].conditions), 1)
         self.assertTrue(isinstance(decoded[0].action, Webhook))
+
+    def test_device_decoder(self):
+        j = """{
+                 "key": "test-dev",
+                 "name": "",
+                 "attributes": {
+                   "type": "blarg"
+                 },
+                 "sensors": [
+                   {
+                     "key": "vals",
+                     "name": "stuff",
+                     "attributes": {}
+                   }
+                 ]
+            }"""
+        decoder = DeviceDecoder()
+        decoded = json.loads(j, object_hook=decoder)
+        self.assertEquals(decoded.key, 'test-dev')
+        self.assertEquals(decoded.attributes['type'], 'blarg')
+        self.assertEquals(decoded.sensors[0].key, 'vals')
+
+

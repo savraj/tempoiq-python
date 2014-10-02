@@ -1,5 +1,6 @@
 import json
 from row import Row
+from decoder import DeviceDecoder
 
 
 def make_generator(d):
@@ -54,6 +55,17 @@ class Cursor(object):
         raise StopIteration
 
 
+class DeviceCursor(Cursor):
+    def __init__(self, data, response):
+        self.response = response
+        obj = json.loads(data, object_hook=DeviceDecoder())
+        self.data = make_generator(obj['data'])
+
+    def _fetch_next(self):
+        # Cursoring not yet supported
+        raise StopIteration
+
+
 class DataPointCursor(Cursor):
     """An iterable cursor over a collection of DataPoint objects.  The
     timezone, rollup data, and start and end times are available as the
@@ -77,7 +89,6 @@ class DataPointCursor(Cursor):
 
     def __init__(self, data, response):
         self.response = response
-        print("RESPONSE: ", data)
         self.data = make_generator(
             [Row(d) for d in data['data']])
 
