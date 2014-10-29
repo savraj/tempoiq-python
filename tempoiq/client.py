@@ -2,8 +2,14 @@ import json
 import urlparse
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
-from response import Response, SensorPointsResponse
+from response import Response, SensorPointsResponse, DeleteDatapointsResponse
 from response import RuleResponse, DeviceResponse
+
+
+def make_fetcher(endpoint, url):
+    def fetcher(cursor):
+        resp = endpoint.get(url, data=cursor)
+        return json.loads(resp.body)
 
 
 class MonitoringClient(object):
@@ -68,6 +74,12 @@ class Client(object):
         resp = self.endpoint.delete(url, j)
         return Response(resp, self.endpoint)
 
+    def delete_from_sensors(self, query, start, end):
+        url = urlparse.urljoin(self.endpoint.base_url, 'delete/')
+        j = json.dumps(query, default=self.read_encoder.default)
+        resp = self.endpoint.get(url, j)
+        return DeleteDatapointsResponse(resp, self.endpoint)
+
     def monitor(self, rule):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
         rule_json = json.dumps(rule, default=self.write_encoder.default)
@@ -81,13 +93,19 @@ class Client(object):
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
         resp = self.endpoint.get(url, j)
-        return SensorPointsResponse(resp, self.endpoint)
+        fetcher = make_fetcher(self.endpoint, url)
+        return SensorPointsResponse(resp, self.endpoint, fetcher)
 
     def search_devices(self, query, size=5000):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
         return DeviceResponse(self.endpoint.get(url, j), self.endpoint)
+
+    def single_value(self, query):
+        url = urlparse.urljoin(self.endpoint.base_url, 'single/')
+        j = json.dumps(query, default=self.read_encoder.default)
+        return SensorPointsResponse(self.endpoint.get(url, j), self.endpoint)
 
     def write(self, write_request):
         url = urlparse.urljoin(self.endpoint.base_url, 'write/')

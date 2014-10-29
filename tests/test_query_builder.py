@@ -42,3 +42,38 @@ class TestQueryBuilder(unittest.TestCase):
         qb.filter(Rule.key == 'foo')
         key = extract_key_for_monitoring(qb.selection['rules'])
         self.assertEquals(key, 'foo')
+
+    def test_single_value_with_invalid_selection(self):
+        qb = QueryBuilder(None, Rule)
+        with self.assertRaises(TypeError):
+            qb.single_value()
+
+    def test_single_value_with_no_pipeline(self):
+        qb = QueryBuilder(None, Sensor)
+        #this will raise an error which is fine, just want to check a side
+        #effect
+        try:
+            qb.single_value()
+        except:
+            pass
+        self.assertEquals(qb.operation.name, 'single_value')
+        self.assertEquals(qb.operation.args, {'include_selection': False})
+
+    def test_single_value_with_pipeline(self):
+        qb = QueryBuilder(None, Sensor)
+        qb.aggregate('max').rollup('min', '1day')
+        try:
+            qb.single_value(start='foo', end='bar')
+        except:
+            pass
+        self.assertEquals(qb.pipeline[1].args[-1], 'foo')
+
+    def test_single_value_with_include_selection(self):
+        qb = QueryBuilder(None, Sensor)
+        #this will raise an error which is fine, just want to check a side
+        #effect
+        try:
+            qb.single_value(include_selection=True)
+        except:
+            pass
+        self.assertEquals(qb.operation.args, {'include_selection': True})
