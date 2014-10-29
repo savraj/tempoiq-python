@@ -3,6 +3,7 @@ from tempoiq.protocol.device import Device
 from tempoiq.protocol.sensor import Sensor
 from tempoiq.protocol.rule import Rule
 from tempoiq.protocol.query.builder import QueryBuilder
+from tempoiq.protocol.query.builder import DELETEKEYMSG
 from tempoiq.protocol.query.builder import extract_key_for_monitoring
 from tempoiq.protocol.query.selection import AndClause, OrClause, or_
 from tempoiq.protocol.query.selection import ScalarSelector
@@ -77,3 +78,39 @@ class TestQueryBuilder(unittest.TestCase):
         except:
             pass
         self.assertEquals(qb.operation.args, {'include_selection': True})
+
+    def test_query_builder_with_valid_delete_datapoints(self):
+        qb = QueryBuilder(None, Sensor)
+        qb.filter(Device.key == 'bar')
+        qb.filter(Sensor.key == 'foo')
+        try:
+            qb.delete(start='then', stop='now')
+        except:
+            pass
+        self.assertEquals(qb.operation.args, {'start': 'then', 'stop': 'now',
+                                              'device_key': 'bar',
+                                              'sensor_key': 'foo'})
+
+    def test_query_builder_with_invalid_with_no_selection(self):
+        qb = QueryBuilder(None, Sensor)
+        with self.assertRaises(ValueError) as e:
+            qb.delete(start='then', stop='now')
+        self.assertEquals(e.exception.message, DELETEKEYMSG)
+
+    def test_query_builder_invalid_with_attr_selection(self):
+        qb = QueryBuilder(None, Sensor)
+        qb.filter(Device.attributes['foo'] == 'bar')
+        with self.assertRaises(ValueError) as e:
+            qb.delete(start='then', stop='now')
+
+        self.assertEquals(e.exception.message, DELETEKEYMSG)
+
+    def test_query_builder_invalid_with_compound_selection(self):
+        qb = QueryBuilder(None, Sensor)
+        qb.filter(Device.key == 'bar')
+        qb.filter(Sensor.key == 'foo')
+        qb.filter(Sensor.key == 'baz')
+        with self.assertRaises(ValueError) as e:
+            qb.delete(start='then', stop='now')
+
+        self.assertEquals(e.exception.message, DELETEKEYMSG)

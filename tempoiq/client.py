@@ -74,10 +74,12 @@ class Client(object):
         resp = self.endpoint.delete(url, j)
         return Response(resp, self.endpoint)
 
-    def delete_from_sensors(self, query, start, end):
-        url = urlparse.urljoin(self.endpoint.base_url, 'delete/')
-        j = json.dumps(query, default=self.read_encoder.default)
-        resp = self.endpoint.get(url, j)
+    def delete_from_sensors(self, device_key, sensor_key, start, end):
+        url = urlparse.urljoin(self.endpoint.base_url, 'devices/',
+                               device_key + '/', 'sensors/',
+                               sensor_key + '/')
+        j = json.dumps({'start': start, 'end': end})
+        resp = self.endpoint.delete(url, j)
         return DeleteDatapointsResponse(resp, self.endpoint)
 
     def monitor(self, rule):

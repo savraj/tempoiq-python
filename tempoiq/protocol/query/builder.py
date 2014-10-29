@@ -1,6 +1,7 @@
 import warnings
 import exceptions
 from selection import Selection, ScalarSelector, OrClause, AndClause
+from selection import Compound, DictSelectable
 from functions import *
 from tempoiq.protocol import Rule
 
@@ -9,6 +10,7 @@ PIPEMSG = 'Pipeline functions passed to monitor call currently have no effect'
 DEVICEMSG = 'Pipeline functions passed to device reads have no effect'
 ROLLUPMSG = 'Rollup, find, and multi-rollup must have a start and end passed to them'
 DELETEMSG = 'Deleting data from sensors requires a start and end time'
+DELETEKEYMSG = 'Deleting data from a sensor requires a selection specifying one device key and one sensor key only'
 
 
 def extract_key_for_monitoring(selection):
@@ -48,6 +50,20 @@ class QueryBuilder(object):
             elif isinstance(function, Interpolation):
                 function.args.extend([start, end])
 
+    def _validate_datapoint_delete(self):
+        if issubclass(self.selection['devices'].selection.__class__,
+                      (Compound, DictSelectable)):
+            raise ValueError(DELETEKEYMSG)
+        if issubclass(self.selection['sensors'].selection.__class__,
+                      (Compound, DictSelectable)):
+            raise ValueError(DELETEKEYMSG)
+        if self.selection['devices'].selection is None:
+            raise ValueError(DELETEKEYMSG)
+        if self.selection['sensors'].selection is None:
+            raise ValueError(DELETEKEYMSG)
+        return (self.selection['devices'].selection.value,
+                self.selection['sensors'].selection.value)
+
     def aggregate(self, function):
         self.pipeline.append(Aggregation(function))
         return self
@@ -74,12 +90,15 @@ class QueryBuilder(object):
             self.client.delete_device(self)
         elif self.object_type == 'sensors':
             start = kwargs.get('start')
-            end = kwargs.get('end')
+            end = kwargs.get('stop')
             if start is None or end is None:
                 raise ValueError(DELETEMSG)
-            args = {'start': start, 'stop': end}
+            (device_key, sensor_key) = self._validate_datapoint_delete()
+            args = {'start': start, 'stop': end, 'device_key': device_key,
+                    'sensor_key': sensor_key}
             self.operation = APIOperation('delete', args)
-            self.client.delete_from_sensors(self, start, end)
+            self.client.delete_from_sensors(self, device_key, sensor_key,
+                                            start, end)
         elif self.object_type == 'rules':
             key = extract_key_for_monitoring(self.selection['rules'])
             self.client.monitoring_client.delete_rule(key)
