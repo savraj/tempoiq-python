@@ -46,14 +46,14 @@ class TestQueryBuilder(unittest.TestCase):
     def test_single_value_with_invalid_selection(self):
         qb = QueryBuilder(None, Rule)
         with self.assertRaises(TypeError):
-            qb.single_value()
+            qb.latest()
 
     def test_single_value_with_no_pipeline(self):
         qb = QueryBuilder(None, Sensor)
         #this will raise an error which is fine, just want to check a side
         #effect
         try:
-            qb.single_value()
+            qb.latest()
         except:
             pass
         self.assertEquals(qb.operation.name, 'single_value')
@@ -63,7 +63,7 @@ class TestQueryBuilder(unittest.TestCase):
         qb = QueryBuilder(None, Sensor)
         qb.aggregate('max').rollup('min', '1day')
         try:
-            qb.single_value(start='foo', end='bar')
+            qb.latest(start='foo', end='bar')
         except:
             pass
         self.assertEquals(qb.pipeline[1].args[-1], 'foo')
@@ -73,7 +73,7 @@ class TestQueryBuilder(unittest.TestCase):
         #this will raise an error which is fine, just want to check a side
         #effect
         try:
-            qb.single_value(include_selection=True)
+            qb.latest(include_selection=True)
         except:
             pass
         self.assertEquals(qb.operation.args, {'include_selection': True})
