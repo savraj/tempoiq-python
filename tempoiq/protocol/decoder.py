@@ -1,4 +1,6 @@
 from rule import Rule, Condition, Trigger, Filter, Webhook
+from device import Device
+from sensor import Sensor
 from query.selection import Selection, ScalarSelector, AndClause, OrClause
 
 
@@ -45,6 +47,27 @@ def decode_selection(selection, selection_type='devices'):
             selector = decode_scalar_selector(selection, selection_type)
         s.add(selector)
     return s
+
+
+class DeviceDecoder(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, dct):
+        if dct.get('sensors'):  # Main device object
+            return self.decode_device(dct)
+        return dct
+
+    def decode_device(self, dct):
+        key = dct['key']
+        attributes = dct['attributes']
+        name = dct['name']
+        sensors = []
+        for s in dct['sensors']:
+            _sensor = Sensor(s['key'], name=s['name'], attributes=s['attributes'])
+            sensors.append(_sensor)
+
+        return Device(key, name=name, attributes=attributes, sensors=sensors)
 
 
 class TempoIQDecoder(object):

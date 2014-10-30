@@ -1,103 +1,105 @@
-Examples and Snippets
-=====================
+Examples
+========
 
-Below are some examples to help you get started using the API.
+Initializing the client
+-----------------------
 
-Setting up a client
--------------------
+You must initialize a client object before you can make any API calls::
 
-To set up a client, simply use your database ID, API key, and secret::
+    import tempoiq.session
 
-    from tempodb.client import Client
+    client = tempoiq.session.get_session(
+                                "https://your-url.backend.tempoiq.com",
+                                "your-key", 
+                                "your-secret")
 
 
-    DATABASE_ID = 'my database'
-    API_KEY = DATABASE_ID    # Currently API_KEY is the same as DATABASE_ID
-    API_SECRET = 'my secret'
-
-    client = Client(DATABASE_ID, API_KEY, API_SECRET)
-
-Creating a series
+Creating a device
 -----------------
 
-Series are created by key.  Additionally, if you attempt to write to a 
-non-existent series, the series will be automatically created for you::
+To create a new device in your backend::
 
-    client.create_series('my-series')
+    from tempoiq.protocol.device import Device
+    from tempoiq.protocol.sensor import Sensor
+    import tempoiq.response
 
-Modifying a series
-------------------
+    temp_sensor = Sensor("temperature", attributes={"unit": "degC"})
+    humid_sensor = Sensor("humidity", attributes={"unit": "percent"})
 
-Series have several attributes that can be modified - name, tags, and 
-attributes.  The recommended way to update a series is using the standard
-read-update-write cycle::
+    device = Device("thermostat-12345", 
+                    attributes={"type": "thermostat", "building": "24"},
+                    sensors=[temp_sensor, humid_sensor])
+    response = client.create_device(device)
 
-    response = client.get_series('my-key')
-    series1 = response.data
-    series1.name = 'foobar'
-    series1.tags = ['baz', 'abc']
-    series1.attributes = {'foo': 'bar'}
-    client.update_series(series1)
+    if response.successful != tempoiq.response.SUCCESS:
+        print("Error creating device!")
 
-Writing data
-------------
 
-There are two options for writing data - writing to one series at a time or 
-writing to multiple series in one shot.
+Writing sensor data
+-------------------
 
-Writing to one series::
+To write sensor data for the device we created above::
 
     import datetime
-    import random
+    from tempoiq.protocol.point import Point
+
+    current = datetime.datetime.now()
+
+    device_data = {"temperature": [ Point(current, 23.5) ],
+                   "humidity": [ Point(current, 72.0) ]}
+
+    response = client.write({"thermostat-12345": device_data})
+
+    if res.successful != tempoiq.response.SUCCESS:
+        print("Error writing data!")
 
 
-    series = 'my-series'
-    data = []
-    date = datetime.datetime(2012, 1, 1)
+Getting devices
+---------------
 
-    #writing random data
-    for minute in range(1, 1441):
+To get a list of all devices matching given filter criteria::
 
-        dp = DataPoint.from_data(date, random.random() * 100.0)
-        data.append(dp)
-        date = date + datetime.timedelta(minutes=1)
-    
-    client.write_data(series, data)
+    result = client.query(Device).filter(Device.attributes["building"] == "24").read()
 
-Writing to multiple series::
+    for dev in result.data:
+        print("Got device with key: {}".format(dev.key))
 
-    series = ['series1', 'series2'] 
-    for minute in range(1, 1441):
-        #choose a series randomly to write to - note that you add a key 
-        #argument to tell the API which series the data point belongs to
-        dp = DataPoint.from_data(date, random.random() * 100.0,
-                                 key=random.choice(series))
-        data.append(dp)
-        date = date + datetime.timedelta(minutes=1)
-    
-    client.write_multi(series, data)
 
-Reading data
-------------
+You can use a compound selector to filter for the logical AND or OR of several
+selectors::
 
-Once data has been written to a series, reading it back out is 
-straightforward::
+    from tempoiq.protocol.query.selection import and_, or_
 
-    start = datetime.date(2012, 1, 1)
-    end = start + datetime.timedelta(days=1)
-    response = client.read_data('my-series', start, end)
+    filter = or_([Device.attributes["building"] == "24", 
+                  Device.attributes["building"] == "26"])
+    result = client.query(Device)
+                   .filter(filter)
+                   .read()
 
-    for d in response.data:
-        print d.t, d.v
 
-Reading from multiple series::
+Reading sensor data
+-------------------
 
-    response = client.read_multi(keys=['series1', 'series2'], start, end)
-    
-    for d in response.data:
-        print d.t, d.get('series1'), d.get('series2')
+To read raw data from one or more sensors and devices::
 
-Note that your actual data points are stored in a cursor.  This cursor will 
-automatically handle the API's pagination until it reaches the end of the data 
-you request.  It is also "read once."  After you have iterated through a 
-cursor, accessing the data again will require another API call.
+    start = datetime.datetime(2014, 6, 1, 0, 0)
+    end = datetime.datetime(2014, 6, 2, 0, 0)
+
+    result = client.query(Sensor).filter(Device.attributes["building"] == "24")
+                                 .filter(Sensor.key == "temperature")
+                                 .read(start=start, end=end)
+
+    for row in result.data:
+        print("Timestamp: {} Values: {}".format(row.timestamp, row.values))
+
+It's also possible to iterate through individual values in each row object::
+
+    for row in result.data:
+        for ((device, sensor), value) in row:
+            print device, sensor, value
+
+Rollups, interpolation, and aggregation can be added to the query as well::
+
+    result = client.query(Sensor).filter(Device.attributes["building"] == "24")
+                                 .rollup("max", "1hour")
+                                 .read(start=start, end=end)

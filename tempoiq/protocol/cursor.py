@@ -31,7 +31,7 @@ class Cursor(object):
     """An iterable cursor over data retrieved from the TempoDB API.  The
     cursor will make network requests to fetch more data as needed, until
     the API returns no more data.  It can be used with the standard
-    iterable interface:
+    iterable interface::
 
         >>> data = [d for d in response.data]"""
 
@@ -52,8 +52,7 @@ class Cursor(object):
 
 
 class TempoIQCursor(Cursor):
-    """An iterable cursor over a collection of Row objects.
-    The data attribute holds the actual data from the request.
+    """The data attribute holds the actual data from the request.
 
     Additionally, the raw response object is available as the response
     attribute of the cursor.

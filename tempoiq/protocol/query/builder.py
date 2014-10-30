@@ -24,6 +24,10 @@ def extract_key_for_monitoring(selection):
 
 
 class QueryBuilder(object):
+    """Class to build queries. All instance methods in this class return
+    the instance itself. This allows you to construct queries fluently,
+    by chaining method calls."""
+
     def __init__(self, client, object_type):
         self.client = client
         self.object_type = object_type.__name__.lower() + 's'
@@ -65,6 +69,8 @@ class QueryBuilder(object):
                 self.selection['sensors'].selection.value)
 
     def aggregate(self, function):
+        """Aggregate the data in the query with the specified aggregation
+        function"""
         self.pipeline.append(Aggregation(function))
         return self
 
@@ -81,10 +87,17 @@ class QueryBuilder(object):
         return self.client.monitoring_client.get_changelog(key)
 
     def convert_timezone(self, tz):
+        """Convert the result's data points to the specified time zone.
+
+        :param String tz: Time zone"""
         self.pipeline.append(ConvertTZ(tz))
         return self
 
     def delete(self, **kwargs):
+        """Execute an API call to delete the objects that are a result of this
+        query. Currently only supported for deleting entire devices.
+        equivalent to passing this QueryBuilder to
+        :meth:`tempoiq.client.Client.delete_device`"""
         if self.object_type == 'devices':
             self.operation = APIOperation('find', {'quantifier': 'all'})
             self.client.delete_device(self)
@@ -104,6 +117,14 @@ class QueryBuilder(object):
             self.client.monitoring_client.delete_rule(key)
 
     def filter(self, selector):
+        """Filter the query based on the provided selector. The argument may be
+        a :class:`~tempoiq.protocol.query.selection.ScalarSelector` or the
+        result of combining several selectors
+        with :func:`~tempoiq.protocol.query.selection.or_` or
+        :func:`~tempoiq.protocol.query.selection.and_`\ .
+
+        :param selector:
+        """
         if not isinstance(selector, (ScalarSelector, OrClause, AndClause)):
             raise TypeError('Invalid object for filter: "%s"' % selector)
         self.selection[selector.selection_type].add(selector)
@@ -114,6 +135,10 @@ class QueryBuilder(object):
         return self
 
     def interpolate(self, function, period):
+        """Interpolate the sensor data
+
+        :param String function: Interpolation function ("zoh" or "linear")
+        :param String period: Time period to interpolate"""
         self.pipeline.append(Interpolation(function, period))
         return self
 
@@ -130,14 +155,33 @@ class QueryBuilder(object):
         return self.client.monitor(rule)
 
     def multi_rollup(self, functions, period):
+        """Apply multiple rollups to the same sensor data.
+
+        :param list functions: list of rollup functions to apply
+        :param String period: Time period of the rollups
+        """
         self.pipeline.append(MultiRollup(functions, period))
         return self
 
     def rollup(self, function, period):
+        """Apply a rollup function to the query.
+
+        :param String function: The rollup function to apply
+        :param String period: The time period of the rollup
+        """
         self.pipeline.append(Rollup(function, period))
         return self
 
     def read(self, **kwargs):
+        """Make the API call to the TempoIQ backend for this query.
+
+        :param start: required when reading sensor data. Start of time range
+                      to read.
+        :type start: DateTime
+        :param end: required when reading sensor data. End of time range to
+                    read.
+        :type end: DateTime
+        """
         if self.object_type == 'sensors':
             start = kwargs['start']
             end = kwargs['end']

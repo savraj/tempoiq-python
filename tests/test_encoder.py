@@ -183,15 +183,15 @@ class TestReadEncoder(unittest.TestCase):
                 'functions': [
                     {
                         'name': 'aggregation',
-                        'args': ['max']
+                        'arguments': ['max']
                     },
                     {
                         'name': 'convert_tz',
-                        'args': ['CDT']
+                        'arguments': ['CDT']
                     },
                     {
                         'name': 'rollup',
-                        'args': [
+                        'arguments': [
                             'min',
                             '1min',
                             '2014-01-01T00:00:00'
@@ -199,7 +199,7 @@ class TestReadEncoder(unittest.TestCase):
                     },
                     {
                         'name': 'multi_rollup',
-                        'args': [
+                        'arguments': [
                             ['max', 'min'],
                             '1min',
                             '2014-01-01T00:00:00'
@@ -207,7 +207,7 @@ class TestReadEncoder(unittest.TestCase):
                     },
                     {
                         'name': 'interpolate',
-                        'args': [
+                        'arguments': [
                             'linear',
                             '1min',
                             '2014-01-01T00:00:00',
@@ -216,7 +216,7 @@ class TestReadEncoder(unittest.TestCase):
                     },
                     {
                         'name': 'find',
-                        'args': [
+                        'arguments': [
                             'max',
                             '1min',
                             '2014-01-01T00:00:00'
