@@ -102,7 +102,9 @@ class Client(object):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        return DeviceResponse(self.endpoint.get(url, j), self.endpoint)
+        fetcher = make_fetcher(self.endpoint, url)
+        return DeviceResponse(self.endpoint.get(url, j), self.endpoint,
+                              fetcher)
 
     def single_value(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'single/')

@@ -68,12 +68,13 @@ class Response(object):
 
 
 class DeviceResponse(Response):
-    def __init__(self, resp, session):
+    def __init__(self, resp, session, fetcher):
         super(DeviceResponse, self).__init__(resp, session)
+        self.fetcher = fetcher
         self.parse(self.body)
 
     def parse(self, body):
-        self.data = json.loads(body)
+        self.data = TempoIQCursor(self, json.loads(body), self.fetcher)
 
 
 class SensorPointsResponse(Response):
