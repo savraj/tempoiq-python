@@ -185,7 +185,8 @@ class QueryBuilder(object):
         if self.object_type == 'sensors':
             start = kwargs['start']
             end = kwargs['end']
-            args = {'start': start, 'stop': end}
+            size = kwargs.get('limit', 5000)
+            args = {'start': start, 'stop': end, 'limit': size}
             #this is set here to be used by the encoder to correctly specify
             #the last step of the operation in the JSON
             self.operation = APIOperation('read', args)
@@ -195,8 +196,9 @@ class QueryBuilder(object):
             if self.pipeline:
                 self.pipeline = []
                 warnings.warn(DEVICEMSG, exceptions.FutureWarning)
-            size = kwargs.get('size', 5000)
-            self.operation = APIOperation('find', {'quantifier': 'all'})
+            size = kwargs.get('limit', 5000)
+            self.operation = APIOperation('find',
+                                          {'quantifier': 'all', 'limit': size})
             return self.client.search_devices(self, size=size)
         elif self.object_type == 'rules':
             kwargs['__method$$'] = 'get_rule'

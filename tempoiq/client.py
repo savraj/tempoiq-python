@@ -128,7 +128,7 @@ class Client(object):
         fetcher = make_fetcher(self.endpoint, url)
         return SensorPointsResponse(resp, self.endpoint, fetcher)
 
-    def search_devices(self, query, size=5000):
+    def search_devices(self, query):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
