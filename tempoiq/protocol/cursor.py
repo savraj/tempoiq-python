@@ -1,7 +1,9 @@
 from row import Row
+from device import Device
+from sensor import Sensor
 
 
-def make_generator(d):
+def make_row_generator(d):
     """"Utility function for converting a list to a generator.
 
     :param list d: the list to convert
@@ -9,6 +11,15 @@ def make_generator(d):
 
     for i in d:
         yield Row(i)
+
+
+def make_device_generator(d):
+    for i in d:
+        sensors = []
+        for s in i['sensors']:
+            sensors.append(Sensor(s['key'], s.get('name', ''),
+                                  s['attributes']))
+        yield Device(i['key'], i.get('name', ''), i['attributes'], sensors)
 
 
 def check_response(resp):
@@ -37,7 +48,7 @@ class Cursor(object):
 
     def __init__(self, data,  response):
         self.response = response
-        self.data = make_generator(data)
+        self.data = make_row_generator(data)
 
     def __iter__(self):
         while True:
@@ -51,7 +62,7 @@ class Cursor(object):
         raise StopIteration
 
 
-class TempoIQCursor(Cursor):
+class DeviceCursor(Cursor):
     """The data attribute holds the actual data from the request.
 
     Additionally, the raw response object is available as the response
@@ -63,12 +74,37 @@ class TempoIQCursor(Cursor):
     def __init__(self, response, data, fetcher):
         self.response = response
         self.fetcher = fetcher
-        self.data = make_generator(data.data)
+        self.data = make_device_generator(data['data'])
 
     def _fetch_next(self):
         try:
             cursor_obj = self.response.data['cursor']['next_query']
             new_data = self.fetcher(cursor_obj)
-            self.data = make_generator(new_data['data'])
+            self.response.data = new_data
+            self.data = make_device_generator(new_data['data'])
+        except KeyError:
+            raise StopIteration
+
+
+class DataPointsCursor(Cursor):
+    """The data attribute holds the actual data from the request.
+
+    Additionally, the raw response object is available as the response
+    attribute of the cursor.
+
+    :param response: the raw response object
+    :type response: :class:`tempodb.response.Response"""
+
+    def __init__(self, response, data, fetcher):
+        self.response = response
+        self.fetcher = fetcher
+        self.data = make_row_generator(data['data'])
+
+    def _fetch_next(self):
+        try:
+            cursor_obj = self.response.data['cursor']['next_query']
+            new_data = self.fetcher(cursor_obj)
+            self.response.data = new_data
+            self.data = make_row_generator(new_data['data'])
         except KeyError:
             raise StopIteration

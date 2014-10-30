@@ -3,12 +3,16 @@ import urlparse
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, DeleteDatapointsResponse
-from response import RuleResponse, DeviceResponse
+from response import RuleResponse, DeviceResponse, ResponseException
 
 
 def make_fetcher(endpoint, url):
     def fetcher(cursor):
         resp = endpoint.get(url, data=cursor)
+        if resp.status_code != 200:
+            #munge this so the ResponsException can work with it
+            resp.status = resp.status_code
+            raise ResponseException(resp)
         return json.loads(resp.body)
 
 
