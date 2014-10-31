@@ -74,11 +74,12 @@ class DeviceCursor(Cursor):
     def __init__(self, response, data, fetcher):
         self.response = response
         self.fetcher = fetcher
+        self._raw_data = data
         self.data = make_device_generator(data['data'])
 
     def _fetch_next(self):
         try:
-            cursor_obj = self.response.data['cursor']['next_query']
+            cursor_obj = self._raw_data['next_page']['next_query']
             new_data = self.fetcher(cursor_obj)
             self.response.data = new_data
             self.data = make_device_generator(new_data['data'])
@@ -98,11 +99,12 @@ class DataPointsCursor(Cursor):
     def __init__(self, response, data, fetcher):
         self.response = response
         self.fetcher = fetcher
+        self._raw_data = data
         self.data = make_row_generator(data['data'])
 
     def _fetch_next(self):
         try:
-            cursor_obj = self.response.data['cursor']['next_query']
+            cursor_obj = self._raw_data['next_page']['next_query']
             new_data = self.fetcher(cursor_obj)
             self.response.data = new_data
             self.data = make_row_generator(new_data['data'])

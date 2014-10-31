@@ -8,12 +8,13 @@ from response import RuleResponse, DeviceResponse, ResponseException
 
 def make_fetcher(endpoint, url):
     def fetcher(cursor):
-        resp = endpoint.get(url, data=cursor)
+        resp = endpoint.get(url, json.dumps(cursor))
         if resp.status_code != 200:
             #munge this so the ResponsException can work with it
             resp.status = resp.status_code
             raise ResponseException(resp)
         return json.loads(resp.body)
+    return fetcher
 
 
 class MonitoringClient(object):
@@ -99,10 +100,11 @@ class Client(object):
         return Response(resp, self.endpoint)
 
     def delete_from_sensors(self, device_key, sensor_key, start, end):
-        url = urlparse.urljoin(self.endpoint.base_url, 'devices/',
-                               device_key + '/', 'sensors/',
-                               sensor_key + '/')
-        j = json.dumps({'start': start, 'end': end})
+        path = 'devices/' + device_key + '/sensors/' + sensor_key + \
+            '/datapoints'
+        url = urlparse.urljoin(self.endpoint.base_url, path)
+        j = json.dumps({'start': start.isoformat(),
+                        'stop': end.isoformat()})
         resp = self.endpoint.delete(url, j)
         return DeleteDatapointsResponse(resp, self.endpoint)
 
@@ -139,7 +141,9 @@ class Client(object):
     def single_value(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'single/')
         j = json.dumps(query, default=self.read_encoder.default)
-        return SensorPointsResponse(self.endpoint.get(url, j), self.endpoint)
+        fetcher = make_fetcher(self.endpoint, url)
+        return SensorPointsResponse(self.endpoint.get(url, j), self.endpoint,
+                                    fetcher)
 
     def write(self, write_request):
         """Write data points to one or more devices and sensors.

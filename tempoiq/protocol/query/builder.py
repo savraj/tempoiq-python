@@ -11,6 +11,7 @@ DEVICEMSG = 'Pipeline functions passed to device reads have no effect'
 ROLLUPMSG = 'Rollup, find, and multi-rollup must have a start and end passed to them'
 DELETEMSG = 'Deleting data from sensors requires a start and end time'
 DELETEKEYMSG = 'Deleting data from a sensor requires a selection specifying one device key and one sensor key only'
+DELETEDEVICEMSG = 'Start and end are invalid arguments for deleting devices.  Are you sure you didn\'t mean session.query(Sensor).delete() instead?'
 
 
 def extract_key_for_monitoring(selection):
@@ -99,22 +100,28 @@ class QueryBuilder(object):
         equivalent to passing this QueryBuilder to
         :meth:`tempoiq.client.Client.delete_device`"""
         if self.object_type == 'devices':
+            start = kwargs.get('start')
+            end = kwargs.get('end')
+            if start or end:
+                raise ValueError(DELETEDEVICEMSG)
+
             self.operation = APIOperation('find', {'quantifier': 'all'})
-            self.client.delete_device(self)
+            return self.client.delete_device(self)
         elif self.object_type == 'sensors':
             start = kwargs.get('start')
-            end = kwargs.get('stop')
+            end = kwargs.get('end')
             if start is None or end is None:
                 raise ValueError(DELETEMSG)
             (device_key, sensor_key) = self._validate_datapoint_delete()
             args = {'start': start, 'stop': end, 'device_key': device_key,
                     'sensor_key': sensor_key}
             self.operation = APIOperation('delete', args)
-            self.client.delete_from_sensors(self, device_key, sensor_key,
-                                            start, end)
+            r = self.client.delete_from_sensors(device_key, sensor_key,
+                                                start, end)
+            return r
         elif self.object_type == 'rules':
             key = extract_key_for_monitoring(self.selection['rules'])
-            self.client.monitoring_client.delete_rule(key)
+            return self.client.monitoring_client.delete_rule(key)
 
     def filter(self, selector):
         """Filter the query based on the provided selector. The argument may be
@@ -199,7 +206,7 @@ class QueryBuilder(object):
             size = kwargs.get('limit', 5000)
             self.operation = APIOperation('find',
                                           {'quantifier': 'all', 'limit': size})
-            return self.client.search_devices(self, size=size)
+            return self.client.search_devices(self)
         elif self.object_type == 'rules':
             kwargs['__method$$'] = 'get_rule'
             return self._handle_monitor_read(**kwargs)
@@ -221,7 +228,7 @@ class QueryBuilder(object):
     def latest(self, start=None, end=None, include_selection=False):
         if self.object_type == 'sensors':
             args = {'include_selection': include_selection}
-            self.operation = APIOperation('single_value', args)
+            self.operation = APIOperation('single', args)
             self._normalize_pipeline_functions(start, end)
             return(self.client.single_value(self))
         else:
