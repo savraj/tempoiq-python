@@ -32,7 +32,8 @@ def make_url_args(params):
 class HTTPEndpoint(object):
     """Represents an HTTP endpoint for accessing a REST API.  Provides
     utility methods for GET, POST, PUT, and DELETE requests. Do not explicitly
-    call the methods on this class, use the :class:`tempoiq.client.Client` class instead.
+    call the methods on this class, use the :class:`tempoiq.client.Client`
+    class instead.
 
     :param string base_url: the base URL for the endpoint
     :param string key: the API key for the endpoint
@@ -47,7 +48,7 @@ class HTTPEndpoint(object):
             self.base_url = base_url + '/v2/'
 
         self.headers = {
-            'User-Agent': 'tempoiq-python/%s' % "1.0.0",
+            'User-Agent': 'tempoiq-python/%s' % "1.0.1",
             'Accept-Encoding': 'gzip'
         }
         self.auth = HTTPBasicAuth(key, secret)

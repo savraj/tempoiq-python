@@ -1,12 +1,17 @@
 import warnings
 import exceptions
 from selection import Selection, ScalarSelector, OrClause, AndClause
+from selection import Compound, DictSelectable
 from functions import *
 from tempoiq.protocol import Rule
 
 
 PIPEMSG = 'Pipeline functions passed to monitor call currently have no effect'
 DEVICEMSG = 'Pipeline functions passed to device reads have no effect'
+ROLLUPMSG = 'Rollup, find, and multi-rollup must have a start and end passed to them'
+DELETEMSG = 'Deleting data from sensors requires a start and end time'
+DELETEKEYMSG = 'Deleting data from a sensor requires a selection specifying one device key and one sensor key only'
+DELETEDEVICEMSG = 'Start and end are invalid arguments for deleting devices.  Are you sure you didn\'t mean session.query(Sensor).delete() instead?'
 
 
 def extract_key_for_monitoring(selection):
@@ -44,12 +49,29 @@ class QueryBuilder(object):
     def _normalize_pipeline_functions(self, start, end):
         for function in self.pipeline:
             if isinstance(function, (Rollup, MultiRollup, Find)):
+                if start is None or end is None:
+                    raise ValueError(ROLLUPMSG)
                 function.args.append(start)
             elif isinstance(function, Interpolation):
                 function.args.extend([start, end])
 
+    def _validate_datapoint_delete(self):
+        if issubclass(self.selection['devices'].selection.__class__,
+                      (Compound, DictSelectable)):
+            raise ValueError(DELETEKEYMSG)
+        if issubclass(self.selection['sensors'].selection.__class__,
+                      (Compound, DictSelectable)):
+            raise ValueError(DELETEKEYMSG)
+        if self.selection['devices'].selection is None:
+            raise ValueError(DELETEKEYMSG)
+        if self.selection['sensors'].selection is None:
+            raise ValueError(DELETEKEYMSG)
+        return (self.selection['devices'].selection.value,
+                self.selection['sensors'].selection.value)
+
     def aggregate(self, function):
-        """Aggregate the data in the query with the specified aggregation function"""
+        """Aggregate the data in the query with the specified aggregation
+        function"""
         self.pipeline.append(Aggregation(function))
         return self
 
@@ -72,19 +94,34 @@ class QueryBuilder(object):
         self.pipeline.append(ConvertTZ(tz))
         return self
 
-    def delete(self):
+    def delete(self, **kwargs):
         """Execute an API call to delete the objects that are a result of this
         query. Currently only supported for deleting entire devices.
         equivalent to passing this QueryBuilder to
         :meth:`tempoiq.client.Client.delete_device`"""
         if self.object_type == 'devices':
+            start = kwargs.get('start')
+            end = kwargs.get('end')
+            if start or end:
+                raise ValueError(DELETEDEVICEMSG)
+
             self.operation = APIOperation('find', {'quantifier': 'all'})
-            self.client.delete_device(self)
+            return self.client.delete_device(self)
         elif self.object_type == 'sensors':
-            raise TypeError('Deleting sensors not supported')
+            start = kwargs.get('start')
+            end = kwargs.get('end')
+            if start is None or end is None:
+                raise ValueError(DELETEMSG)
+            (device_key, sensor_key) = self._validate_datapoint_delete()
+            args = {'start': start, 'stop': end, 'device_key': device_key,
+                    'sensor_key': sensor_key}
+            self.operation = APIOperation('delete', args)
+            r = self.client.delete_from_sensors(device_key, sensor_key,
+                                                start, end)
+            return r
         elif self.object_type == 'rules':
             key = extract_key_for_monitoring(self.selection['rules'])
-            self.client.monitoring_client.delete_rule(key)
+            return self.client.monitoring_client.delete_rule(key)
 
     def filter(self, selector):
         """Filter the query based on the provided selector. The argument may be
@@ -145,15 +182,20 @@ class QueryBuilder(object):
     def read(self, **kwargs):
         """Make the API call to the TempoIQ backend for this query.
 
-        :param start: Required when reading sensor data. Start of time range to read.
+        :param start: required when reading sensor data. Start of time range
+                      to read.
         :type start: DateTime
-        :param end: Required when reading sensor data. End of time range to read.
+        :param end: required when reading sensor data. End of time range to
+                    read.
         :type end: DateTime
         """
         if self.object_type == 'sensors':
             start = kwargs['start']
             end = kwargs['end']
-            args = {'start': start, 'stop': end}
+            size = kwargs.get('limit', 5000)
+            args = {'start': start, 'stop': end, 'limit': size}
+            #this is set here to be used by the encoder to correctly specify
+            #the last step of the operation in the JSON
             self.operation = APIOperation('read', args)
             self._normalize_pipeline_functions(start, end)
             return self.client.read(self)
@@ -161,14 +203,36 @@ class QueryBuilder(object):
             if self.pipeline:
                 self.pipeline = []
                 warnings.warn(DEVICEMSG, exceptions.FutureWarning)
-            size = kwargs.get('size', 5000)
-            self.operation = APIOperation('find', {'quantifier': 'all'})
-            return self.client.search_devices(self, size=size)
+            size = kwargs.get('limit', 5000)
+            self.operation = APIOperation('find',
+                                          {'quantifier': 'all', 'limit': size})
+            return self.client.search_devices(self)
         elif self.object_type == 'rules':
             kwargs['__method$$'] = 'get_rule'
             return self._handle_monitor_read(**kwargs)
         else:
             msg = 'Only sensors, devices, and rules can be selected'
+            raise TypeError(msg)
+
+    #TODO: latest() will eventually be implemented in terms of this
+    #def single_value(self, start=None, end=None, include_selection=False):
+    #    if self.object_type == 'sensors':
+    #        args = {'include_selection': include_selection}
+    #        self.operation = APIOperation('single_value', args)
+    #        self._normalize_pipeline_functions(start, end)
+    #        return(self.client.single_value(self))
+    #    else:
+    #        msg = 'Single value only applies to sensors'
+    #        raise TypeError(msg)
+
+    def latest(self, start=None, end=None, include_selection=False):
+        if self.object_type == 'sensors':
+            args = {'include_selection': include_selection}
+            self.operation = APIOperation('single', args)
+            self._normalize_pipeline_functions(start, end)
+            return(self.client.single_value(self))
+        else:
+            msg = 'Latest function only applies to sensors'
             raise TypeError(msg)
 
     def usage(self):

@@ -156,10 +156,11 @@ class TestReadEncoder(unittest.TestCase):
             },
             'read': {
                 'start': '2014-01-01T00:00:00',
+                'limit': 5000,
                 'stop': '2014-01-02T00:00:00'
             }
         }
-        self.assertEquals(j, json.dumps(expected))
+        self.assertEquals(json.loads(j), expected)
 
     def test_encode_query_builder_with_pipeline(self):
         qb = QueryBuilder(self.client, Sensor)
@@ -183,15 +184,15 @@ class TestReadEncoder(unittest.TestCase):
                 'functions': [
                     {
                         'name': 'aggregation',
-                        'args': ['max']
+                        'arguments': ['max']
                     },
                     {
                         'name': 'convert_tz',
-                        'args': ['CDT']
+                        'arguments': ['CDT']
                     },
                     {
                         'name': 'rollup',
-                        'args': [
+                        'arguments': [
                             'min',
                             '1min',
                             '2014-01-01T00:00:00'
@@ -199,7 +200,7 @@ class TestReadEncoder(unittest.TestCase):
                     },
                     {
                         'name': 'multi_rollup',
-                        'args': [
+                        'arguments': [
                             ['max', 'min'],
                             '1min',
                             '2014-01-01T00:00:00'
@@ -207,7 +208,7 @@ class TestReadEncoder(unittest.TestCase):
                     },
                     {
                         'name': 'interpolate',
-                        'args': [
+                        'arguments': [
                             'linear',
                             '1min',
                             '2014-01-01T00:00:00',
@@ -216,7 +217,7 @@ class TestReadEncoder(unittest.TestCase):
                     },
                     {
                         'name': 'find',
-                        'args': [
+                        'arguments': [
                             'max',
                             '1min',
                             '2014-01-01T00:00:00'
@@ -226,10 +227,11 @@ class TestReadEncoder(unittest.TestCase):
             },
             'read': {
                 'start': '2014-01-01T00:00:00',
+                'limit': 5000,
                 'stop': '2014-01-02T00:00:00'
             }
         }
-        self.assertEquals(j, json.dumps(expected))
+        self.assertEquals(json.loads(j), expected)
 
     def test_query_builder_to_monitoring_read(self):
         qb = QueryBuilder(self.client, Rule)

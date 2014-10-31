@@ -1,16 +1,25 @@
-import json
 from row import Row
-from decoder import DeviceDecoder
+from device import Device
+from sensor import Sensor
 
 
-def make_generator(d):
+def make_row_generator(rows):
     """"Utility function for converting a list to a generator.
 
     :param list d: the list to convert
     :rtype: generator"""
 
-    for i in d:
-        yield i
+    for r in rows:
+        yield Row(r)
+
+
+def make_device_generator(devices):
+    for d in devices:
+        sensors = []
+        for s in d['sensors']:
+            sensors.append(Sensor(s['key'], s.get('name', ''),
+                                  s['attributes']))
+        yield Device(d['key'], d.get('name', ''), d['attributes'], sensors)
 
 
 def check_response(resp):
@@ -37,11 +46,9 @@ class Cursor(object):
 
         >>> data = [d for d in response.data]"""
 
-    def __init__(self, data, t, response):
+    def __init__(self, data,  response):
         self.response = response
-        self.type = t
-        self.data = make_generator(
-            [self.type(d, self.response) for d in data])
+        self.data = make_row_generator(data)
 
     def __iter__(self):
         while True:
@@ -56,54 +63,55 @@ class Cursor(object):
 
 
 class DeviceCursor(Cursor):
-    def __init__(self, data, response):
-        self.response = response
-        obj = json.loads(data, object_hook=DeviceDecoder())
-        self.data = make_generator(obj['data'])
-
-    def _fetch_next(self):
-        # Cursoring not yet supported
-        raise StopIteration
-
-
-class DataPointCursor(Cursor):
-    """An iterable cursor over a collection of DataPoint objects.  The
-    timezone, rollup data, and start and end times are available as the
-    following attributes on the cursor directly:
-
-        * tz
-        * rollup
-        * start
-        * end
-
-    The data attribute holds the actual data from the request.
+    """The data attribute holds the actual data from the request.
 
     Additionally, the raw response object is available as the response
     attribute of the cursor.
 
-    :param list data: a list of data points from the API
-    :param class type: the type of object construct from the data
     :param response: the raw response object
-    :type response: :class:`tempodb.response.Response`
-    :param string tz: the timezone the data is returned in"""
+    :type response: :class:`tempodb.response.Response"""
 
-    def __init__(self, data, response):
+    def __init__(self, response, data, fetcher):
         self.response = response
-        self.data = make_generator(
-            [Row(d) for d in data['data']])
+        self.fetcher = fetcher
+        self._raw_data = data
+        self.data = make_device_generator(data['data'])
 
     def _fetch_next(self):
         try:
-            link = self.response.resp.links['next']['url']
+            cursor_obj = self._raw_data['next_page']['next_query']
+            new_data = self.fetcher(cursor_obj)
+            self._raw_data = new_data
+            self.response.data = new_data
+            self.data = make_device_generator(new_data['data'])
         except KeyError:
             raise StopIteration
 
-        n = self.response.session.get(link)
-        #HACK: put here to avoid circular import, no performance hit
-        #because the VM will cache the module
-        from tempoiq.response import Response
-        self.response = Response(n, self.response.session)
-        check_response(self.response)
-        j = json.loads(n.text)
-        self.data = make_generator(
-            [Row(d) for d in j['data']])
+
+class DataPointsCursor(Cursor):
+    """The data attribute holds the actual data from the request.
+
+    Additionally, the raw response object is available as the response
+    attribute of the cursor.
+
+    :param response: the raw response object
+    :type response: :class:`tempodb.response.Response"""
+
+    def __init__(self, response, data, fetcher):
+        self.response = response
+        self.fetcher = fetcher
+        self._raw_data = data
+        self.data = make_row_generator(data['data'])
+
+    def _fetch_next(self):
+        try:
+            cursor_obj = self._raw_data['next_page']['next_query']
+            new_data = self.fetcher(cursor_obj)
+            self._raw_data = new_data
+            self.response.data = new_data
+            self.data = make_row_generator(new_data['data'])
+        except KeyError:
+            raise StopIteration
+        except Exception, e:
+            print e
+            raise StopIteration

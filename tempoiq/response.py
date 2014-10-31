@@ -1,6 +1,6 @@
 import json
-from protocol.cursor import DataPointCursor, DeviceCursor
-from protocol.decoder import TempoIQDecoder, DeviceDecoder
+from protocol.cursor import DeviceCursor, DataPointsCursor
+from protocol.decoder import TempoIQDecoder
 
 
 SUCCESS = 0
@@ -68,33 +68,26 @@ class Response(object):
 
 
 class DeviceResponse(Response):
-    def __init__(self, resp, session):
+    def __init__(self, resp, session, fetcher):
         super(DeviceResponse, self).__init__(resp, session)
+        self.fetcher = fetcher
         if self.successful == SUCCESS:
             self.parse(self.body)
 
     def parse(self, body):
-        self.data = json.loads(body, object_hook=DeviceDecoder())
-
-
-class DeviceCursorResponse(Response):
-    def __init__(self, resp, session):
-        super(DeviceCursorResponse, self).__init__(resp, session)
-        if self.successful == SUCCESS:
-            self.parse(self.body)
-
-    def parse(self, body):
-        self.data = DeviceCursor(body, self)
+        data = json.loads(body)
+        self.data = DeviceCursor(self, data, self.fetcher)
 
 
 class SensorPointsResponse(Response):
-    def __init__(self, resp, session):
+    def __init__(self, resp, session, fetcher):
         super(SensorPointsResponse, self).__init__(resp, session)
+        self.fetcher = fetcher
         if self.successful == SUCCESS:
             self.parse(self.body)
 
     def parse(self, body):
-        self.data = DataPointCursor(json.loads(body), self)
+        self.data = DataPointsCursor(self, json.loads(body), self.fetcher)
 
 
 class RuleResponse(Response):
@@ -106,3 +99,12 @@ class RuleResponse(Response):
     def parse(self, body):
         decoder = TempoIQDecoder()
         self.data = json.loads(body, object_hook=decoder)
+
+
+class DeleteDatapointsResponse(Response):
+    def __init__(self, resp, session):
+        super(DeleteDatapointsResponse, self).__init__(resp, session)
+        self.parse(self.body)
+
+    def parse(self, body):
+        self.data = {}
