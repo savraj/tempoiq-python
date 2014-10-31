@@ -3,23 +3,23 @@ from device import Device
 from sensor import Sensor
 
 
-def make_row_generator(d):
+def make_row_generator(rows):
     """"Utility function for converting a list to a generator.
 
     :param list d: the list to convert
     :rtype: generator"""
 
-    for i in d:
-        yield Row(i)
+    for r in rows:
+        yield Row(r)
 
 
-def make_device_generator(d):
-    for i in d:
+def make_device_generator(devices):
+    for d in devices:
         sensors = []
-        for s in i['sensors']:
+        for s in d['sensors']:
             sensors.append(Sensor(s['key'], s.get('name', ''),
                                   s['attributes']))
-        yield Device(i['key'], i.get('name', ''), i['attributes'], sensors)
+        yield Device(d['key'], d.get('name', ''), d['attributes'], sensors)
 
 
 def check_response(resp):

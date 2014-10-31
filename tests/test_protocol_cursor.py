@@ -57,7 +57,7 @@ class TestProtocolCursor(unittest.TestCase):
 
     def test_datapoints_cursor_iteration_with_extra_fetch(self):
         first_data = {
-            'cursor': {'next_query': None},
+            'next_page': {'next_query': None},
             'data': [
                 {'t': '2014-01-01T00:00:00',
                  'data': {
@@ -107,7 +107,7 @@ class TestProtocolCursor(unittest.TestCase):
 
     def test_device_cursor_iteration_with_extra_fetch(self):
         first_data = {
-            'cursor': {'next_query': None},
+            'next_page': {'next_query': None},
             'data': [
                 {'key': 'device1', 'attributes': {}, 'sensors': []}
             ]

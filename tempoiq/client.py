@@ -100,8 +100,8 @@ class Client(object):
         return Response(resp, self.endpoint)
 
     def delete_from_sensors(self, device_key, sensor_key, start, end):
-        path = 'devices/' + device_key + '/sensors/' + sensor_key + \
-            '/datapoints'
+        path = '/'.join(['devices', device_key, 'sensors',  sensor_key,
+                         'datapoints'])
         url = urlparse.urljoin(self.endpoint.base_url, path)
         j = json.dumps({'start': start.isoformat(),
                         'stop': end.isoformat()})
