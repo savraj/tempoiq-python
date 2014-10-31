@@ -13,7 +13,7 @@ def make_fetcher(endpoint, url):
             #munge this so the ResponsException can work with it
             resp.status = resp.status_code
             raise ResponseException(resp)
-        return json.loads(resp.body)
+        return json.loads(resp.text)
     return fetcher
 
 

@@ -81,6 +81,7 @@ class DeviceCursor(Cursor):
         try:
             cursor_obj = self._raw_data['next_page']['next_query']
             new_data = self.fetcher(cursor_obj)
+            self._raw_data = new_data
             self.response.data = new_data
             self.data = make_device_generator(new_data['data'])
         except KeyError:
@@ -106,7 +107,11 @@ class DataPointsCursor(Cursor):
         try:
             cursor_obj = self._raw_data['next_page']['next_query']
             new_data = self.fetcher(cursor_obj)
+            self._raw_data = new_data
             self.response.data = new_data
             self.data = make_row_generator(new_data['data'])
         except KeyError:
+            raise StopIteration
+        except Exception, e:
+            print e
             raise StopIteration
