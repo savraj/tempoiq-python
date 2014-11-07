@@ -172,7 +172,8 @@ class ReadEncoder(TempoIQEncoder):
 
         if not j['search']['filters']['devices']:
             if not j['search']['filters']['sensors']:
-                j['search']['filters'] = {}
+                j['search']['filters']['devices'] = 'all'
+                j['search']['filters']['sensors'] = 'all'
         else:
             if not j['search']['filters']['sensors']:
                 j['search']['filters']['sensors'] = 'all'
