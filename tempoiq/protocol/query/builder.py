@@ -203,7 +203,7 @@ class QueryBuilder(object):
                 self.pipeline = []
                 warnings.warn(DEVICEMSG, exceptions.FutureWarning)
             self.operation = APIOperation('find',
-                                          {'quantifier': 'all')
+                                          {'quantifier': 'all'})
             return self.client.search_devices(self)
         elif self.object_type == 'rules':
             kwargs['__method$$'] = 'get_rule'
