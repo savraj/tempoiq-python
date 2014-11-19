@@ -55,9 +55,9 @@ class QueryBuilder(object):
                     function.args[-1] = start
             elif isinstance(function, Interpolation):
                 if function.args[-2] is None:
-                    function.args[-2] = end
+                    function.args[-2] = start
                 if function.args[-1] is None:
-                    function.args[-1] = start
+                    function.args[-1] = end
 
     def _validate_datapoint_delete(self):
         if issubclass(self.selection['devices'].selection.__class__,
