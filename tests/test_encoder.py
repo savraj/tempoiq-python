@@ -156,7 +156,6 @@ class TestReadEncoder(unittest.TestCase):
             },
             'read': {
                 'start': '2014-01-01T00:00:00',
-                'limit': 5000,
                 'stop': '2014-01-02T00:00:00'
             }
         }
@@ -227,7 +226,6 @@ class TestReadEncoder(unittest.TestCase):
             },
             'read': {
                 'start': '2014-01-01T00:00:00',
-                'limit': 5000,
                 'stop': '2014-01-02T00:00:00'
             }
         }
