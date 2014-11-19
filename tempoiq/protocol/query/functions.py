@@ -15,23 +15,23 @@ class ConvertTZ(Function):
 
 
 class Rollup(Function):
-    def __init__(self, function, period):
-        super(Rollup, self).__init__('rollup', [function, period])
+    def __init__(self, function, period, start=None):
+        super(Rollup, self).__init__('rollup', [function, period, start])
 
 
 class MultiRollup(Function):
-    def __init__(self, functions, period):
-        super(MultiRollup, self).__init__('multi_rollup', [functions, period])
+    def __init__(self, functions, period, start=None):
+        super(MultiRollup, self).__init__('multi_rollup', [functions, period, start])
 
 
 class Find(Function):
-    def __init__(self, function, period):
-        super(Find, self).__init__('find', [function, period])
+    def __init__(self, function, period, start=None):
+        super(Find, self).__init__('find', [function, period, start])
 
 
 class Interpolation(Function):
-    def __init__(self, function, period):
-        super(Interpolation, self).__init__('interpolate', [function, period])
+    def __init__(self, function, period, start=None, end=None):
+        super(Interpolation, self).__init__('interpolate', [function, period, start, end])
 
 
 class APIOperation(object):
