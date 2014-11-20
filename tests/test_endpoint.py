@@ -108,3 +108,15 @@ class TestEndpoint(unittest.TestCase):
             data='',
             headers=self.end.headers,
             auth=self.end.auth)
+
+    def test_endpoint_merges_headers(self):
+        url = 'series/'
+        new_headers = {'foo': 'bar'}
+        self.end.pool.get.return_value = True
+        self.end.get(url, headers=new_headers)
+        merged = p.merge_headers(self.end.headers, new_headers)
+        self.end.pool.get.assert_called_once_with(
+            'http://www.nothing.com/v2/series/',
+            data='',
+            headers=merged,
+            auth=self.end.auth)
