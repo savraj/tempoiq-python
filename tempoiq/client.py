@@ -112,7 +112,7 @@ class Client(object):
         :rtype: :class:`tempoiq.response.Response` with a
                 :class:`tempoiq.protocol.device.Device` data payload"""
 
-        path = '/'.join(['devices', device.key])    # TODO: urlencode the device key
+        path = '/'.join(['devices', escape(device.key)])
         url = urlparse.urljoin(self.endpoint.base_url, path)
         j = json.dumps(device, default=self.create_encoder.default)
         resp = self.endpoint.put(url, j)
