@@ -51,9 +51,13 @@ class QueryBuilder(object):
             if isinstance(function, (Rollup, MultiRollup, Find)):
                 if start is None or end is None:
                     raise ValueError(ROLLUPMSG)
-                function.args.append(start)
+                if function.args[-1] is None:
+                    function.args[-1] = start
             elif isinstance(function, Interpolation):
-                function.args.extend([start, end])
+                if function.args[-2] is None:
+                    function.args[-2] = start
+                if function.args[-1] is None:
+                    function.args[-1] = end
 
     def _validate_datapoint_delete(self):
         if issubclass(self.selection['devices'].selection.__class__,
@@ -137,11 +141,11 @@ class QueryBuilder(object):
         self.selection[selector.selection_type].add(selector)
         return self
 
-    def find(self, function, period):
-        self.pipeline.append(Find(function, period))
+    def find(self, function, period, start=None):
+        self.pipeline.append(Find(function, period, start))
         return self
 
-    def interpolate(self, function, period):
+    def interpolate(self, function, period, start=None, end=None):
         """Interpolate the sensor data
 
         :param String function: Interpolation function ("zoh" or "linear")
@@ -161,22 +165,24 @@ class QueryBuilder(object):
         rule.selection = self.selection
         return self.client.monitor(rule)
 
-    def multi_rollup(self, functions, period):
+    def multi_rollup(self, functions, period, start=None):
         """Apply multiple rollups to the same sensor data.
 
         :param list functions: list of rollup functions to apply
         :param String period: Time period of the rollups
         """
-        self.pipeline.append(MultiRollup(functions, period))
+        self.pipeline.append(MultiRollup(functions, period, start))
         return self
 
-    def rollup(self, function, period):
+    def rollup(self, function, period, start=None):
         """Apply a rollup function to the query.
 
         :param String function: The rollup function to apply
         :param String period: The time period of the rollup
+        :param DateTime start: (optional) A timestamp to use as the start of
+        the first rollup period. Default is the same as the start of the read.
         """
-        self.pipeline.append(Rollup(function, period))
+        self.pipeline.append(Rollup(function, period, start))
         return self
 
     def read(self, **kwargs):

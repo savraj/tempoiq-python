@@ -156,7 +156,6 @@ class TestReadEncoder(unittest.TestCase):
             },
             'read': {
                 'start': '2014-01-01T00:00:00',
-                'limit': 5000,
                 'stop': '2014-01-02T00:00:00'
             }
         }
@@ -227,8 +226,43 @@ class TestReadEncoder(unittest.TestCase):
             },
             'read': {
                 'start': '2014-01-01T00:00:00',
-                'limit': 5000,
                 'stop': '2014-01-02T00:00:00'
+            }
+        }
+        self.assertEquals(json.loads(j), expected)
+
+    def test_query_builder_with_optional_pipeline_args(self):
+        qb = QueryBuilder(self.client, Sensor)
+        start = datetime.datetime(2014, 1, 1, 12, 0)
+        end = datetime.datetime(2014, 1, 3, 12, 0)
+        rollup_start = datetime.datetime(2014, 1, 1, 0, 0)
+        qb.filter(Device.key == 'foo').filter(Sensor.key == 'bar')
+        qb.rollup('min', '1min', rollup_start)
+        qb.read(start=start, end=end)
+        j = json.dumps(qb, default=self.read_encoder.default)
+        expected = {
+            'search': {
+                'select': 'sensors',
+                'filters': {
+                    'devices': {'key': 'foo'},
+                    'sensors': {'key': 'bar'}
+                }
+            },
+            'fold': {
+                'functions': [
+                    {
+                        'name': 'rollup',
+                        'arguments': [
+                            'min',
+                            '1min',
+                            '2014-01-01T00:00:00'
+                        ]
+                    }
+                ]
+            },
+            'read': {
+                'start': '2014-01-01T12:00:00',
+                'stop': '2014-01-03T12:00:00'
             }
         }
         self.assertEquals(json.loads(j), expected)
