@@ -4,11 +4,18 @@ from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, DeleteDatapointsResponse
 from response import RuleResponse, DeviceResponse, ResponseException
+from endpoint import media_type, media_types
 
 
-def make_fetcher(endpoint, url):
+ERROR_ACCEPT_TYPE = media_type('error', 'v1')
+DEVICE_ACCEPT_TYPE = media_type('device-collection', 'v2')
+DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v2')
+CONTENT_TYPE = media_type('query', 'v1')
+
+
+def make_fetcher(endpoint, url, headers={}):
     def fetcher(cursor):
-        resp = endpoint.get(url, json.dumps(cursor))
+        resp = endpoint.get(url, json.dumps(cursor), headers=headers)
         if resp.status_code != 200:
             #munge this so the ResponsException can work with it
             resp.status = resp.status_code
@@ -126,17 +133,23 @@ class Client(object):
     def read(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
-        resp = self.endpoint.get(url, j)
-        fetcher = make_fetcher(self.endpoint, url)
+        accept_headers = [ERROR_ACCEPT_TYPE, DATAPOINT_ACCEPT_TYPE]
+        content_header = CONTENT_TYPE
+        headers = media_types(accept_headers, content_header)
+        resp = self.endpoint.get(url, j, headers=headers)
+        fetcher = make_fetcher(self.endpoint, url, headers)
         return SensorPointsResponse(resp, self.endpoint, fetcher)
 
     def search_devices(self, query):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        fetcher = make_fetcher(self.endpoint, url)
-        return DeviceResponse(self.endpoint.get(url, j), self.endpoint,
-                              fetcher)
+        accept_headers = [ERROR_ACCEPT_TYPE, DEVICE_ACCEPT_TYPE]
+        content_header = CONTENT_TYPE
+        headers = media_types(accept_headers, content_header)
+        fetcher = make_fetcher(self.endpoint, url, headers)
+        return DeviceResponse(self.endpoint.get(url, j, headers=headers),
+                              self.endpoint, fetcher)
 
     def single_value(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'single/')
