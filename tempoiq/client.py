@@ -104,6 +104,20 @@ class Client(object):
         resp = self.endpoint.delete(url, j)
         return Response(resp, self.endpoint)
 
+    def update_device(self, device):
+        """Update the attributes of a device.
+
+        :param device:
+        :type device: :class:`~tempoiq.protocol.device.Device`
+        :rtype: :class:`tempoiq.response.Response` with a
+                :class:`tempoiq.protocol.device.Device` data payload"""
+
+        path = '/'.join(['devices', device.key])    # TODO: urlencode the device key
+        url = urlparse.urljoin(self.endpoint.base_url, path)
+        j = json.dumps(device, default=self.create_encoder.default)
+        resp = self.endpoint.put(url, j)
+        return Response(resp, self.endpoint)
+
     def delete_from_sensors(self, device_key, sensor_key, start, end):
         path = '/'.join(
             ['devices', escape(device_key), 'sensors',  escape(sensor_key),
