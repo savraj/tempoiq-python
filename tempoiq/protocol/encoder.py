@@ -1,5 +1,5 @@
 import json
-from query.selection import AndClause, Compound
+from query.selection import AndClause, Compound, OrClause, ScalarSelector
 
 
 class TempoIQEncoder(json.JSONEncoder):
@@ -146,8 +146,17 @@ class ReadEncoder(TempoIQEncoder):
         else:
             name = 'or'
 
+        result = []
+        for selector in clause.selectors:
+            if isinstance(selector, (AndClause, OrClause)):
+                result.append(self.encode_compound_clause(selector))
+            elif isinstance(selector, ScalarSelector):
+                result.append(self.encode_scalar_selector(selector))
+            else:
+                raise ValueError("invalid selector type")
+
         return {
-            name: map(self.encode_scalar_selector, clause.selectors)
+            name: result
         }
 
     def encode_function(self, function):
@@ -197,5 +206,5 @@ class ReadEncoder(TempoIQEncoder):
             if len(selection.selection.selectors) == 0:
                 return {}
             else:
-                return self.encode_compound_clause(selection.selection)
+                return self.default(selection.selection)
         return self.encode_scalar_selector(selection.selection)

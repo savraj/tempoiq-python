@@ -1,9 +1,14 @@
 import json
 import urlparse
+import urllib
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, DeleteDatapointsResponse
 from response import RuleResponse, DeviceResponse, ResponseException
+
+
+def escape(s):
+    return urllib.quote(s, safe='')
 
 
 def make_fetcher(endpoint, url):
@@ -107,15 +112,16 @@ class Client(object):
         :rtype: :class:`tempoiq.response.Response` with a
                 :class:`tempoiq.protocol.device.Device` data payload"""
 
-        path = '/'.join(['devices', device.key])    # TODO: urlencode the device key
+        path = '/'.join(['devices', escape(device.key)])
         url = urlparse.urljoin(self.endpoint.base_url, path)
         j = json.dumps(device, default=self.create_encoder.default)
         resp = self.endpoint.put(url, j)
         return Response(resp, self.endpoint)
 
     def delete_from_sensors(self, device_key, sensor_key, start, end):
-        path = '/'.join(['devices', device_key, 'sensors',  sensor_key,
-                         'datapoints'])
+        path = '/'.join(
+            ['devices', escape(device_key), 'sensors',  escape(sensor_key),
+             'datapoints'])
         url = urlparse.urljoin(self.endpoint.base_url, path)
         j = json.dumps({'start': start.isoformat(),
                         'stop': end.isoformat()})

@@ -120,6 +120,24 @@ class TestReadEncoder(unittest.TestCase):
         }
         self.assertEquals(j, json.dumps(expected))
 
+    def test_encode_nested_compound_clause(self):
+        and_clause = and_([Device.key == 'foo', Device.key == 'bar'])
+        clause = or_([and_clause, and_clause])
+        j = json.dumps(clause, default=self.read_encoder.default)
+        expected = {
+            'or': [
+                {'and': [
+                    {'key': 'foo'},
+                    {'key': 'bar'}
+                ]},
+                {'and': [
+                    {'key': 'foo'},
+                    {'key': 'bar'}
+                ]}
+            ]
+        }
+        self.assertEquals(j, json.dumps(expected))
+
     def test_encode_selection(self):
         clause = or_([Device.key == 'foo', Device.key == 'bar'])
         selection = Selection()
