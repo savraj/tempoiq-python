@@ -35,7 +35,7 @@ def merge_headers(h1, h2):
 
 def media_types(accept, content):
     return {
-        'Accept': ';'.join(accept),
+        'Accept': ','.join(accept),
         'Content-Type': content
     }
 
