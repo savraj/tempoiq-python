@@ -29,6 +29,22 @@ def make_url_args(params):
     return urllib.urlencode(p).encode("UTF-8")
 
 
+def merge_headers(h1, h2):
+    return dict(h1.items() + h2.items())
+
+
+def media_types(accept, content):
+    return {
+        'Accept': ','.join(accept),
+        'Content-Type': content
+    }
+
+
+def media_type(media_resource, media_version, suffix='json'):
+    return 'application/prs.tempoiq.%s.%s+%s' % (
+        media_resource, media_version, suffix)
+
+
 class HTTPEndpoint(object):
     """Represents an HTTP endpoint for accessing a REST API.  Provides
     utility methods for GET, POST, PUT, and DELETE requests. Do not explicitly
@@ -57,7 +73,7 @@ class HTTPEndpoint(object):
             adapter = requests.adapters.HTTPAdapter()
             self.pool.mount(p, adapter)
 
-    def post(self, url, body):
+    def post(self, url, body, headers={}):
         """Perform a POST request to the given resource with the given
         body.  The "url" argument will be joined to the base URL this
         object was initialized with.
@@ -67,10 +83,12 @@ class HTTPEndpoint(object):
         :rtype: requests.Response object"""
 
         to_hit = urlparse.urljoin(self.base_url, url)
-        resp = self.pool.post(to_hit, data=body, auth=self.auth)
+        merged = merge_headers(self.headers, headers)
+        resp = self.pool.post(to_hit, data=body, auth=self.auth,
+                              headers=merged)
         return resp
 
-    def get(self, url, body=''):
+    def get(self, url, body='', headers={}):
         """Perform a GET request to the given resource with the given URL.  The
         "url" argument will be joined to the base URL this object was
         initialized with.
@@ -79,10 +97,12 @@ class HTTPEndpoint(object):
         :rtype: requests.Response object"""
 
         to_hit = urlparse.urljoin(self.base_url, url)
-        resp = self.pool.get(to_hit, data=body, auth=self.auth)
+        merged = merge_headers(self.headers, headers)
+        resp = self.pool.get(to_hit, data=body, auth=self.auth,
+                             headers=merged)
         return resp
 
-    def delete(self, url, body=''):
+    def delete(self, url, body='', headers={}):
         """Perform a DELETE request to the given resource with the given.  The
         "url" argument will be joined to the base URL this object was
         initialized with.
@@ -91,10 +111,12 @@ class HTTPEndpoint(object):
         :rtype: requests.Response object"""
 
         to_hit = urlparse.urljoin(self.base_url, url)
-        resp = self.pool.delete(to_hit, data=body, auth=self.auth)
+        merged = merge_headers(self.headers, headers)
+        resp = self.pool.delete(to_hit, data=body, auth=self.auth,
+                                headers=merged)
         return resp
 
-    def put(self, url, body):
+    def put(self, url, body, headers={}):
         """Perform a PUT request to the given resource with the given
         body.  The "url" argument will be joined to the base URL this
         object was initialized with.
@@ -104,5 +126,7 @@ class HTTPEndpoint(object):
         :rtype: requests.Response object"""
 
         to_hit = urlparse.urljoin(self.base_url, url)
-        resp = self.pool.put(to_hit, data=body, auth=self.auth)
+        merged = merge_headers(self.headers, headers)
+        resp = self.pool.put(to_hit, data=body, auth=self.auth,
+                             headers=merged)
         return resp
