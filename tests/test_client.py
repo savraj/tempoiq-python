@@ -41,7 +41,7 @@ class TestClient(unittest.TestCase):
         j = json.dumps(query, default=self.client.create_encoder.default)
         url = 'http://test.tempo-iq.com/v2/read/'
         accept_headers = [ERROR_ACCEPT_TYPE, DATAPOINT_ACCEPT_TYPE]
-        content_header = CONTENT_TYPE
+        content_header = QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
         self.client.read(query)
@@ -54,7 +54,7 @@ class TestClient(unittest.TestCase):
         j = json.dumps(query, default=self.client.create_encoder.default)
         url = 'http://test.tempo-iq.com/v2/devices/'
         accept_headers = [ERROR_ACCEPT_TYPE, DEVICE_ACCEPT_TYPE]
-        content_header = CONTENT_TYPE
+        content_header = QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
         self.client.search_devices(query)
