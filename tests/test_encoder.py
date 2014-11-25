@@ -308,3 +308,4 @@ class TestReadEncoder(unittest.TestCase):
         #self.client.endpoint.pool.get.assert_called_once_with(
         #    'http://test.tempo-iq.com/v2/devices/',
         #    data=expected,
+        #    auth=self.client.endpoint.auth)
