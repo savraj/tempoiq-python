@@ -285,6 +285,14 @@ class TestReadEncoder(unittest.TestCase):
         }
         self.assertEquals(json.loads(j), expected)
 
+    def test_query_builder_sensor_only_search(self):
+        qb = QueryBuilder(self.client, Device)
+        qb.filter(Sensor.key == 'foo')
+        qb.read()
+        j = json.dumps(qb, default=self.read_encoder.default)
+        expected = '{"search": {"filters": {"sensors": {"key": "foo"}, "devices": "all"}, "select": "devices"}, "find": {"quantifier": "all"}}'
+        self.assertEquals(j, expected)
+
     def test_query_builder_to_monitoring_read(self):
         qb = QueryBuilder(self.client, Rule)
         qb.filter(Rule.key == 'foo').read()
@@ -300,4 +308,3 @@ class TestReadEncoder(unittest.TestCase):
         #self.client.endpoint.pool.get.assert_called_once_with(
         #    'http://test.tempo-iq.com/v2/devices/',
         #    data=expected,
-        #    auth=self.client.endpoint.auth)
