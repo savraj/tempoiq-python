@@ -218,26 +218,21 @@ class QueryBuilder(object):
             msg = 'Only sensors, devices, and rules can be selected'
             raise TypeError(msg)
 
-    #TODO: latest() will eventually be implemented in terms of this
-    #def single_value(self, start=None, end=None, include_selection=False):
-    #    if self.object_type == 'sensors':
-    #        args = {'include_selection': include_selection}
-    #        self.operation = APIOperation('single_value', args)
-    #        self._normalize_pipeline_functions(start, end)
-    #        return(self.client.single_value(self))
-    #    else:
-    #        msg = 'Single value only applies to sensors'
-    #        raise TypeError(msg)
-
-    def latest(self, start=None, end=None, include_selection=False):
+    def single(self, function, timestamp=None, include_selection=False):
         if self.object_type == 'sensors':
-            args = {'include_selection': include_selection}
+            args = {'include_selection': include_selection,
+                    'function': function}
+            if timestamp is not None:
+                args['timestamp'] = timestamp
+
             self.operation = APIOperation('single', args)
-            self._normalize_pipeline_functions(start, end)
-            return(self.client.single_value(self))
+            return(self.client.single(self))
         else:
-            msg = 'Latest function only applies to sensors'
+            msg = 'Single value only applies to sensors'
             raise TypeError(msg)
+
+    def latest(self, include_selection=False):
+        self.single('latest', include_selection=include_selection)
 
     def usage(self):
         if not isinstance(self.object_type, Rule):

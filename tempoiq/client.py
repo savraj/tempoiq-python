@@ -171,7 +171,7 @@ class Client(object):
         return DeviceResponse(self.endpoint.get(url, j, headers=headers),
                               self.endpoint, fetcher)
 
-    def single_value(self, query):
+    def single(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'single/')
         j = json.dumps(query, default=self.read_encoder.default)
         fetcher = make_fetcher(self.endpoint, url)

@@ -47,9 +47,9 @@ class TestQueryBuilder(unittest.TestCase):
     def test_single_value_with_invalid_selection(self):
         qb = QueryBuilder(None, Rule)
         with self.assertRaises(TypeError):
-            qb.latest()
+            qb.single('latest')
 
-    def test_single_value_with_no_pipeline(self):
+    def test_latest_value(self):
         qb = QueryBuilder(None, Sensor)
         #this will raise an error which is fine, just want to check a side
         #effect
@@ -58,16 +58,30 @@ class TestQueryBuilder(unittest.TestCase):
         except:
             pass
         self.assertEquals(qb.operation.name, 'single')
-        self.assertEquals(qb.operation.args, {'include_selection': False})
+        self.assertEquals(qb.operation.args, {'include_selection': False, 'function': 'latest'})
+
+    def test_single_value_with_timestamp(self):
+        qb = QueryBuilder(None, Sensor)
+        #this will raise an error which is fine, just want to check a side
+        #effect
+        try:
+            qb.single('before', timestamp='2014-09-15T00:00:01Z')
+        except:
+            pass
+        self.assertEquals(qb.operation.name, 'single')
+        self.assertEquals(qb.operation.args, {'include_selection': False,
+                                              'function': 'before',
+                                              'timestamp': '2014-09-15T00:00:01Z'})
 
     def test_single_value_with_pipeline(self):
         qb = QueryBuilder(None, Sensor)
-        qb.aggregate('max').rollup('min', '1day')
+        qb.convert_timezone('America/Chicago')
         try:
-            qb.latest(start='foo', end='bar')
+            qb.single(function='exact', timestamp=None)
         except:
             pass
-        self.assertEquals(qb.pipeline[1].args[-1], 'foo')
+        self.assertEquals(qb.pipeline[0].name, 'convert_tz')
+        self.assertEquals(qb.pipeline[0].args[0], 'America/Chicago')
 
     def test_single_value_with_include_selection(self):
         qb = QueryBuilder(None, Sensor)
@@ -77,7 +91,7 @@ class TestQueryBuilder(unittest.TestCase):
             qb.latest(include_selection=True)
         except:
             pass
-        self.assertEquals(qb.operation.args, {'include_selection': True})
+        self.assertEquals(qb.operation.args, {'include_selection': True, 'function': 'latest'})
 
     def test_query_builder_with_valid_delete_datapoints(self):
         qb = QueryBuilder(None, Sensor)
