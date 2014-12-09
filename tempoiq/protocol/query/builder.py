@@ -219,6 +219,13 @@ class QueryBuilder(object):
             raise TypeError(msg)
 
     def single(self, function, timestamp=None, include_selection=False):
+        """Make a single-point API call to the TempoIQ backend for this query.
+
+        :param String function: Method for finding the point to return for
+                    each sensor. Ex: earliest, latest, before, after
+        :param DateTime timestamp: required for all functions except earliest
+                    and latest.
+        """
         if self.object_type == 'sensors':
             args = {'include_selection': include_selection,
                     'function': function}
@@ -232,6 +239,9 @@ class QueryBuilder(object):
             raise TypeError(msg)
 
     def latest(self, include_selection=False):
+        """Deprecated. Use the
+        :func:`~tempoiq.protocol.query.builder.QueryBuilder.single` call
+        instead."""
         self.single('latest', include_selection=include_selection)
 
     def usage(self):
