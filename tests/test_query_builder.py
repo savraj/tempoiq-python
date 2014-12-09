@@ -88,7 +88,7 @@ class TestQueryBuilder(unittest.TestCase):
         #this will raise an error which is fine, just want to check a side
         #effect
         try:
-            qb.latest(include_selection=True)
+            qb.single('latest', include_selection=True)
         except:
             pass
         self.assertEquals(qb.operation.args, {'include_selection': True, 'function': 'latest'})
@@ -109,7 +109,7 @@ class TestQueryBuilder(unittest.TestCase):
         qb = QueryBuilder(None, Sensor)
         with self.assertRaises(ValueError) as e:
             qb.delete(start='then', end='now')
-        self.assertEquals(e.exception.message, DELETEKEYMSG)
+        self.assertEquals(e.exception.args[0], DELETEKEYMSG)
 
     def test_query_builder_invalid_with_attr_selection(self):
         qb = QueryBuilder(None, Sensor)
@@ -117,7 +117,7 @@ class TestQueryBuilder(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             qb.delete(start='then', end='now')
 
-        self.assertEquals(e.exception.message, DELETEKEYMSG)
+        self.assertEquals(e.exception.args[0], DELETEKEYMSG)
 
     def test_query_builder_invalid_with_compound_selection(self):
         qb = QueryBuilder(None, Sensor)
@@ -127,4 +127,4 @@ class TestQueryBuilder(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             qb.delete(start='then', end='now')
 
-        self.assertEquals(e.exception.message, DELETEKEYMSG)
+        self.assertEquals(e.exception.args[0], DELETEKEYMSG)

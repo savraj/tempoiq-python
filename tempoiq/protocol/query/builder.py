@@ -4,6 +4,7 @@ from selection import Selection, ScalarSelector, OrClause, AndClause
 from selection import Compound, DictSelectable
 from functions import *
 from tempoiq.protocol import Rule
+from tempoiq.tempo_exceptions import TempoIQDeprecationWarning
 
 
 PIPEMSG = 'Pipeline functions passed to monitor call currently have no effect'
@@ -12,6 +13,7 @@ ROLLUPMSG = 'Rollup, find, and multi-rollup must have a start and end passed to 
 DELETEMSG = 'Deleting data from sensors requires a start and end time'
 DELETEKEYMSG = 'Deleting data from a sensor requires a selection specifying one device key and one sensor key only'
 DELETEDEVICEMSG = 'Start and end are invalid arguments for deleting devices.  Are you sure you didn\'t mean session.query(Sensor).delete() instead?'
+LATESTMSG = 'The latest() method has been deprecated. Please use single("latest") instead.'
 
 
 def extract_key_for_monitoring(selection):
@@ -224,7 +226,6 @@ class QueryBuilder(object):
         :param String function: Method for finding the point to return for
                     each sensor. Ex: earliest, latest, before, after
         :param DateTime timestamp: required for all functions except earliest
-                    and latest.
         """
         if self.object_type == 'sensors':
             args = {'include_selection': include_selection,
@@ -242,6 +243,7 @@ class QueryBuilder(object):
         """Deprecated. Use the
         :func:`~tempoiq.protocol.query.builder.QueryBuilder.single` call
         instead."""
+        warnings.warn(LATESTMSG, TempoIQDeprecationWarning)
         self.single('latest', include_selection=include_selection)
 
     def usage(self):
