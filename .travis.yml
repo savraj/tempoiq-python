@@ -9,3 +9,11 @@ script:
 notifications:
   email:
     - tech@tempo-db.com
+deploy:
+  provider: pypi
+  user: tempoiq
+  password:
+    secure: GQi/lGfxqDXyeFn5PrWiRTbM/uTtaQ4Fb3+f6IhOISsx3/t8xFkMfCnlmnptyQTiXFr2/6no/W4DB9asTNzHwcgAs/q0Ges3dskiAb8zAtJQpVp1i5T+nQItZ/w/4GI3jt52rYce3dmiq4osfLeI6WpRZTzh9O95ZXGwK/k3hNE=
+  on:
+    tags: true
+    all_branches: true  # Workaround, see https://github.com/travis-ci/travis-ci/issues/1675
