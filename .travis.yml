@@ -8,7 +8,7 @@ script:
   - make test
 notifications:
   email:
-    - tech@tempo-db.com
+    - tech@tempoiq.com
 deploy:
   provider: pypi
   user: tempoiq
