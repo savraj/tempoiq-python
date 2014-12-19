@@ -1,7 +1,8 @@
 # TempoIQ Python API Library
 
-The TempoIQ Python API Client makes calls to the [TempoIQ API](http://tempoiq.com/).  The module is not yet available on PyPI, so you must install it directly from source:
+The TempoIQ Python API Client makes calls to the [TempoIQ API](https://tempoiq.com/). The module is available on PyPI as [tempoiq](https://pypi.python.org/pypi/tempoiq/). You can also check out this repository and install from source:
 
+    git clone https://github.com/TempoIQ/tempoiq-python.git
     cd tempoiq-python
     python setup.py install
 
