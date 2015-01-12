@@ -10,7 +10,7 @@ from endpoint import media_type, media_types
 
 ERROR_ACCEPT_TYPE = media_type('error', 'v1')
 DEVICE_ACCEPT_TYPE = media_type('device-collection', 'v2')
-DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v2')
+DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v3')
 QUERY_CONTENT_TYPE = media_type('query', 'v1')
 
 
