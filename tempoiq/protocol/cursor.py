@@ -112,6 +112,9 @@ class DataPointsCursor(Cursor):
             self.data = make_row_generator(new_data['data'])
         except KeyError:
             raise StopIteration
-        except Exception, e:
-            print e
-            raise StopIteration
+        except Exception:
+            raise
+
+
+class StreamResponseCursor(Cursor):
+    pass

@@ -1,7 +1,10 @@
 import unittest
 import pytz
 import datetime
-from tempoiq.protocol.row import Row
+from tempoiq.protocol.row import Row, SelectionEvaluator
+from tempoiq.protocol.query.selection import Selection, or_, and_
+from tempoiq.protocol.device import Device
+from tempoiq.protocol.sensor import Sensor
 
 
 class TestRow(unittest.TestCase):
@@ -86,3 +89,236 @@ class TestRow(unittest.TestCase):
             (('device-2', 'sensor-2'), 3.0)
         ]
         self.assertEquals(values, expected)
+
+    def test_selection_evaluator_with_device_key_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Device.key == 'foo')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]['id'], 0)
+
+    def test_selection_evaluator_with_sensor_key_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Sensor.key == 'foo')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 2)
+        self.assertEquals(results[0]['id'], 0)
+        self.assertEquals(results[1]['id'], 1)
+
+    def test_selection_evaluator_with_device_name_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Device.name == 'bar')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]['id'], 0)
+
+    def test_selection_evaluator_with_sensor_name_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'baz',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Sensor.name == 'baz')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]['id'], 1)
+
+    def test_selection_evaluator_with_device_attribute_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Device.attributes['foo'] == 'bar')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]['id'], 0)
+
+    def test_selection_evaluator_with_sensor_attribute_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Sensor.attributes['foo'] == 'bar')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 2)
+        self.assertEquals(results[0]['id'], 0)
+        self.assertEquals(results[1]['id'], 1)
+
+    def test_selection_evaluator_with_device_compound_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Device.key == 'foo')
+        selection.add(Device.attributes['foo'] == 'bar')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]['id'], 0)
+
+    def test_selection_evaluator_with_sensor_compound_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Sensor.key == 'foo')
+        selection.add(Sensor.attributes['foo'] == 'bar')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 2)
+        self.assertEquals(results[0]['id'], 0)
+        self.assertEquals(results[1]['id'], 1)
+
+    def test_selection_evaluator_with_hybrid_compound_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        clause = or_([Device.key == 'foo', Sensor.attributes['baz'] == 'boz'])
+        selection.add(clause)
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 2)
+        self.assertEquals(results[0]['id'], 0)
+        self.assertEquals(results[1]['id'], 1)
+
+    def test_selection_evaluator_with_nested_compound_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        clause1 = and_([Device.key == 'foo',
+                        Sensor.attributes['baz'] == 'boz'])
+        clause2 = and_([Device.key == 'bar',
+                        Sensor.attributes['foo'] == 'bar'])
+        main_clause = or_([clause1, clause2])
+        selection.add(main_clause)
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 2)
+        self.assertEquals(results[0]['id'], 0)
+        self.assertEquals(results[1]['id'], 1)

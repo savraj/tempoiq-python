@@ -57,18 +57,10 @@ class TestSelectionObjects(unittest.TestCase):
         selection.add(selector)
         self.assertTrue(isinstance(selection.selection, ScalarSelector))
 
-    def test_and_clause_must_be_of_uniform_type(self):
-        selectors = [Device.key == 'foo', Sensor.key == 'bar']
-        self.assertRaises(TypeError, and_, selectors)
-
     def test_and_clause_sets_correct_selection_type(self):
         selectors = [Device.key == 'foo', Device.key == 'bar']
         clause = and_(selectors)
         self.assertEquals(clause.selection_type, 'devices')
-
-    def test_or_clause_must_be_of_uniform_type(self):
-        selectors = [Device.key == 'foo', Sensor.key == 'bar']
-        self.assertRaises(TypeError, or_, selectors)
 
     def test_or_clause_sets_correct_selection_type(self):
         selectors = [Sensor.key == 'foo', Sensor.key == 'bar']

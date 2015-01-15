@@ -151,6 +151,13 @@ class TestReadEncoder(unittest.TestCase):
         }
         self.assertEquals(j, json.dumps(expected))
 
+    def test_encode_invalid_selection(self):
+        clause = or_([Device.key == 'foo', Sensor.key == 'bar'])
+        selection = Selection()
+        selection.add(clause)
+        with self.assertRaises(TypeError):
+            json.dumps(selection, default=self.read_encoder.default)
+
     def test_encode_empty_selection(self):
         selection = Selection()
         j = json.dumps(selection, default=self.read_encoder.default)

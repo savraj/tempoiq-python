@@ -90,10 +90,6 @@ def and_(selectors):
     for selector in selectors:
         if object_type is None:
             object_type = selector.selection_type
-        else:
-            if object_type != selector.selection_type:
-                msg = 'Selectors in an "and" clause must be of uniform type'
-                raise TypeError(msg)
         s.add(selector)
     s.selection_type = object_type
     return s
@@ -109,10 +105,6 @@ def or_(selectors):
     for selector in selectors:
         if object_type is None:
             object_type = selector.selection_type
-        else:
-            if object_type != selector.selection_type:
-                msg = 'Selectors in an "or" clause must be of uniform type'
-                raise TypeError(msg)
         s.add(selector)
     s.selection_type = object_type
     return s
