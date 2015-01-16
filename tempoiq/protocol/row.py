@@ -125,6 +125,8 @@ class SelectionEvaluator(object):
             return selector.value == header[object_type]['key']
         elif selector.key == 'name':
             return selector.value == header[object_type]['name']
+        elif selector.key == 'function':
+            return selector.value == header.get('function')
         else:
             key = selector.value.keys()[0]
             header_value = header[object_type]['attributes'].get(key)
@@ -136,11 +138,16 @@ class SelectionEvaluator(object):
     def _evaluate_sensor_selector(self, selector, header):
         return self._evaluate_selector_on_object(selector, header, 'sensor')
 
+    def _evaluate_stream_selector(self, selector, header):
+        return self._evaluate_selector_on_object(selector, header, 'stream')
+
     def _evaluate_scalar_selector(self, selector, header):
         if selector.selection_type == 'devices':
             return self._evaluate_device_selector(selector, header)
         elif selector.selection_type == 'sensors':
             return self._evaluate_sensor_selector(selector, header)
+        elif selector.selection_type == 'streams':
+            return self._evaluate_stream_selector(selector, header)
         else:
             raise ValueError('Invalid selection type in selection')
 

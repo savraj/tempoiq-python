@@ -6,6 +6,7 @@ from tempoiq.protocol.row import NoResultError, TooManyResultsError
 from tempoiq.protocol.query.selection import Selection, or_, and_
 from tempoiq.protocol.device import Device
 from tempoiq.protocol.sensor import Sensor
+from tempoiq.protocol.stream import Stream
 
 
 class TestRow(unittest.TestCase):
@@ -323,6 +324,29 @@ class TestRow(unittest.TestCase):
         self.assertEquals(len(results), 2)
         self.assertEquals(results[0]['id'], 0)
         self.assertEquals(results[1]['id'], 1)
+
+    def test_selection_evaluator_with_function_name_selector(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'function': 'max',
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'baz',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        selection = Selection()
+        selection.add(Stream.function == 'max')
+
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(headers)]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]['id'], 0)
 
     def test_stream_info_get_one_returns_one(self):
         headers = [
