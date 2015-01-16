@@ -35,6 +35,16 @@ class StreamInfo(object):
         evaluator = SelectionEvaluator(selection)
         return evaluator.filter(self.headers)
 
+    def get_one(self, selection):
+        evaluator = SelectionEvaluator(selection)
+        results = [r for r in evaluator.filter(self.headers)]
+        if len(results) < 1:
+            raise ValueError('Selection would return no results')
+        elif len(results) > 1:
+            raise ValueError('Selection would return more than one result')
+        else:
+            return results[0]
+
 
 class SelectionEvaluator(object):
     def __init__(self, selection):
