@@ -1,5 +1,17 @@
 from tempoiq.temporal.validate import convert_iso_stamp
-from query.selection import AndClause, Compound, OrClause, ScalarSelector
+from device import Device
+from sensor import Sensor
+from stream import Stream
+from query.selection import AndClause, Compound, OrClause, ScalarSelector, and_
+from query.selection import Selection
+
+
+class NoResultError(Exception):
+    pass
+
+
+class TooManyResultsError(Exception):
+    pass
 
 
 class Row(object):
@@ -35,15 +47,43 @@ class StreamInfo(object):
         evaluator = SelectionEvaluator(selection)
         return evaluator.filter(self.headers)
 
-    def get_one(self, selection):
+    def get_one(self, **kwargs):
+        selection = self._compile_kwargs(kwargs)
         evaluator = SelectionEvaluator(selection)
         results = [r for r in evaluator.filter(self.headers)]
         if len(results) < 1:
-            raise ValueError('Selection would return no results')
+            raise NoResultError('Selection would return no results')
         elif len(results) > 1:
-            raise ValueError('Selection would return more than one result')
+            msg = 'Selection would return more than one result'
+            raise TooManyResultsError(msg)
         else:
             return results[0]
+
+    def _compile_kwargs(self, kwargs):
+        selectors = []
+        for k in kwargs:
+            if k == 'device_key':
+                selectors.append(Device.key == kwargs[k])
+            elif k == 'sensor_key':
+                selectors.append(Sensor.key == kwargs[k])
+            elif k == 'device_name':
+                selectors.append(Device.name == kwargs[k])
+            elif k == 'sensor_name':
+                selectors.append(Sensor.name == kwargs[k])
+            elif k == 'device_attributes':
+                for ki in kwargs[k]:
+                    selectors.append(Device.attributes[ki] == kwargs[k][ki])
+            elif k == 'sensor_attributes':
+                for ki in kwargs[k]:
+                    selectors.append(Sensor.attributes[ki] == kwargs[k][ki])
+            elif k == 'function':
+                selectors.append(Stream.function == kwargs[k])
+            else:
+                msg = 'Invalid bind argument given: "%s"' % k
+                raise ValueError(msg)
+        selection = Selection()
+        selection.add(and_(selectors))
+        return selection
 
 
 class SelectionEvaluator(object):

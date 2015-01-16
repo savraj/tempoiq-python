@@ -1,7 +1,8 @@
 import unittest
 import pytz
 import datetime
-from tempoiq.protocol.row import Row, SelectionEvaluator
+from tempoiq.protocol.row import Row, SelectionEvaluator, StreamInfo
+from tempoiq.protocol.row import NoResultError, TooManyResultsError
 from tempoiq.protocol.query.selection import Selection, or_, and_
 from tempoiq.protocol.device import Device
 from tempoiq.protocol.sensor import Sensor
@@ -322,3 +323,57 @@ class TestRow(unittest.TestCase):
         self.assertEquals(len(results), 2)
         self.assertEquals(results[0]['id'], 0)
         self.assertEquals(results[1]['id'], 1)
+
+    def test_stream_info_get_one_returns_one(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        streams = StreamInfo(headers)
+        result = streams.get_one(device_key='foo')
+        self.assertEquals(result['id'], 0)
+
+    def test_stream_info_get_one_returns_none_raises_error(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        streams = StreamInfo(headers)
+        with self.assertRaises(NoResultError):
+            streams.get_one(device_key='blarg')
+
+    def test_stream_info_get_one_returns_two_raises_error(self):
+        headers = [
+            {'device': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz', 'foo': 'bar'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'baz': 'boz'}},
+             'id': 0},
+            {'device': {'key': 'bar', 'name': 'foo',
+                        'attributes': {'baz': 'boz'}},
+             'sensor': {'key': 'foo', 'name': 'bar',
+                        'attributes': {'foo': 'bar'}},
+             'id': 1}
+        ]
+
+        streams = StreamInfo(headers)
+        with self.assertRaises(TooManyResultsError):
+            streams.get_one(sensor_name='bar')
