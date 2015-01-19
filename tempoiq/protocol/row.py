@@ -39,6 +39,22 @@ class Row(object):
                 yield ((device, sensor), self.values[device][sensor])
 
 
+class PointStream(object):
+    def __init__(self, stream_info, manager):
+        self.stream_info = stream_info
+        self.manager = manager
+        self._id = stream_info['id']
+        self.key = self._id
+
+    def __iter__(self):
+        while True:
+            data = self.manager.next(self)
+            value = data.get(self._id)
+            if value is None:
+                continue
+            yield value
+
+
 class StreamInfo(object):
     def __init__(self, headers):
         self.headers = headers
