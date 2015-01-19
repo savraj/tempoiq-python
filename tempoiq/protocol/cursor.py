@@ -215,7 +215,6 @@ class StreamResponseCursor(Cursor):
         self.page_size = len(data['data'])
         self.stream_info = StreamInfo(data['streams'])
         self.manager = StreamManager(self, data, self.page_size)
-        #self.data = make_row_generator(data['data'])
 
     def _fetch_next(self):
         try:
