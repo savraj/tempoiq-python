@@ -490,3 +490,42 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data2 = [s for s in stream2]
         self.assertEquals(data1, [1, 2, 3, 1, 2, 3])
         self.assertEquals(data2, [4, 6, 4, 6])
+
+    def test_two_dimensional_iteration(self):
+        StreamManager.MAX_PAGES = 2
+
+        class Fetcher(object):
+            def __init__(self):
+                self.iters = 0
+
+            def __call__(self, cursor):
+                if self.iters == 1:
+                    raise StopIteration
+                else:
+                    data = {'data': [{1: 4, 2: 4},
+                                     {1: 5},
+                                     {1: 6, 2: 6}],
+                            'streams': [
+                                {'device': {'key': 'foo'}, 'id': 1},
+                                {'device': {'key': 'bar'}, 'id': 2}
+                            ],
+                            'next_page': {'next_query': None}}
+                    self.iters += 1
+                    return data
+
+        data = {'data': [{1: 1, 2: 1},
+                         {1: 2, 2: 2},
+                         {1: 3, 2: 3}],
+                'streams': [
+                    {'device': {'key': 'foo'}, 'id': 1},
+                    {'device': {'key': 'bar'}, 'id': 2}
+                ],
+                'next_page': {'next_query': None}}
+
+        cursor = StreamResponseCursor(None, data, Fetcher())
+        streams = cursor.streams
+        stream_data = []
+        for stream in streams:
+            stream_data.append([s for s in stream])
+        self.assertEquals(stream_data[0], [1, 2, 3, 4, 5, 6])
+        self.assertEquals(stream_data[1], [1, 2, 3, 4, 6])

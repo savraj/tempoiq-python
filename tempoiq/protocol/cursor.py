@@ -231,3 +231,8 @@ class StreamResponseCursor(Cursor):
     def bind_stream(self, **kwargs):
         stream_info = self.stream_info.get_one(**kwargs)
         return PointStream(stream_info, self.manager)
+
+    @property
+    def streams(self):
+        return [PointStream(si, self.manager) for
+                si in self.stream_info.headers]
