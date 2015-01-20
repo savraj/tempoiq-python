@@ -82,9 +82,12 @@ class Client(object):
     create_encoder = CreateEncoder()
     read_encoder = ReadEncoder()
 
-    def __init__(self, endpoint):
+    def __init__(self, endpoint, read_version='v2'):
         self.endpoint = endpoint
         self.monitoring_client = MonitoringClient(self.endpoint)
+        global DATAPOINT_ACCEPT_TYPE
+        DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection',
+                                           read_version)
 
     def create_device(self, device):
         """Create a new device
