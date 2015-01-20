@@ -4,6 +4,7 @@ import urllib
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, DeleteDatapointsResponse
+from response import StreamResponse
 from response import RuleResponse, DeviceResponse, ResponseException
 from endpoint import media_type, media_types
 
@@ -88,6 +89,7 @@ class Client(object):
         global DATAPOINT_ACCEPT_TYPE
         DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection',
                                            read_version)
+        self.read_version = read_version
 
     def create_device(self, device):
         """Create a new device
@@ -161,7 +163,10 @@ class Client(object):
         headers = media_types(accept_headers, content_header)
         resp = self.endpoint.get(url, j, headers=headers)
         fetcher = make_fetcher(self.endpoint, url, headers)
-        return SensorPointsResponse(resp, self.endpoint, fetcher)
+        if self.read_version == 'v2':
+            return SensorPointsResponse(resp, self.endpoint, fetcher)
+        else:
+            return StreamResponse(resp, self.endpoint, fetcher)
 
     def search_devices(self, query):
         #TODO - actually use the size param

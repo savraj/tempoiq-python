@@ -45,7 +45,8 @@ class TestClient(unittest.TestCase):
         content_header = QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
-        self.client.read(query)
+        resp = self.client.read(query)
+        self.assertIsInstance(resp, SensorPointsResponse)
         self.client.endpoint.pool.get.assert_called_once_with(
             url, data=j, auth=self.client.endpoint.auth,
             headers=merged)
@@ -62,7 +63,8 @@ class TestClient(unittest.TestCase):
         content_header = QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
-        self.client.read(query)
+        resp = self.client.read(query)
+        self.assertIsInstance(resp, StreamResponse)
         self.client.endpoint.pool.get.assert_called_once_with(
             url, data=j, auth=self.client.endpoint.auth,
             headers=merged)
