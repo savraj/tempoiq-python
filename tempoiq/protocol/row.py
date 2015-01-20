@@ -3,6 +3,7 @@ from tempoiq.temporal.validate import convert_iso_stamp
 from device import Device
 from sensor import Sensor
 from stream import Stream
+from point import Point
 from query.selection import AndClause, Compound, OrClause, ScalarSelector, and_
 from query.selection import Selection
 
@@ -53,10 +54,12 @@ class PointStream(object):
     def __iter__(self):
         while True:
             data = self.manager.next(self)
-            value = data.get(self._id)
+            time_str = data['t']
+            value = data['data'].get(self._id)
             if value is None:
                 continue
-            yield value
+            timestamp = convert_iso_stamp(time_str)
+            yield Point(timestamp, value)
 
     @property
     def device(self):

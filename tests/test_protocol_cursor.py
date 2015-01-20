@@ -334,14 +334,27 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         def fetcher(cursor):
             raise StopIteration
 
-        data = {'data': [{1: 1}, {1: 2}, {1: 3}],
+        data = {'data': [
+                    {
+                        't': '2015-01-01T00:00:00',
+                        'data': {1: 1},
+                    },
+                    {
+                        't': '2015-01-02T00:00:00',
+                        'data': {1: 2},
+                    },
+                    {
+                        't': '2015-01-03T00:00:00',
+                        'data': {1: 3},
+                    }
+                ],
                 'streams': [{'device': {'key': 'foo'}, 'id': 1}],
                 'next_page': {'next_query': None}}
 
         cursor = StreamResponseCursor(None, data, fetcher)
         stream = cursor.bind_stream(device_key='foo')
         data = [s for s in stream]
-        self.assertEquals(data, [1, 2, 3])
+        self.assertEquals([d.value for d in data], [1, 2, 3])
 
     def test_bind_one_stream_with_missing_data(self):
         StreamManager.MAX_PAGES = 2
@@ -349,14 +362,27 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         def fetcher(cursor):
             raise StopIteration
 
-        data = {'data': [{1: 1}, {2: 2}, {1: 3}],
+        data = {'data': [
+                    {
+                        't': '2015-01-01T00:00:00',
+                        'data': {1: 1},
+                    },
+                    {
+                        't': '2015-01-02T00:00:00',
+                        'data': {},
+                    },
+                    {
+                        't': '2015-01-03T00:00:00',
+                        'data': {1: 3},
+                    }
+                ],
                 'streams': [{'device': {'key': 'foo'}, 'id': 1}],
                 'next_page': {'next_query': None}}
 
         cursor = StreamResponseCursor(None, data, fetcher)
         stream = cursor.bind_stream(device_key='foo')
         data = [s for s in stream]
-        self.assertEquals(data, [1, 3])
+        self.assertEquals([d.value for d in data], [1, 3])
 
     def test_bind_one_stream_with_multiple_pages(self):
         StreamManager.MAX_PAGES = 2
@@ -369,19 +395,45 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                 if self.iters == 1:
                     raise StopIteration
                 else:
-                    data = {'data': [{1: 4}, {1: 5}, {1: 6}],
-                            'streams': [{'device': {'key': 'foo'}, 'id': 1}],
-                            'next_page': {'next_query': None}}
+                    data = {'data': [
+                        {
+                            't': '2015-01-01T00:00:00',
+                            'data': {1: 4},
+                        },
+                        {
+                            't': '2015-01-02T00:00:00',
+                            'data': {1: 5},
+                        },
+                        {
+                            't': '2015-01-03T00:00:00',
+                            'data': {1: 6},
+                        }
+                    ],
+                    'streams': [{'device': {'key': 'foo'}, 'id': 1}],
+                    'next_page': {'next_query': None}}
                     self.iters += 1
                     return data
 
-        data = {'data': [{1: 1}, {1: 2}, {1: 3}],
+        data = {'data': [
+                    {
+                        't': '2015-01-01T00:00:00',
+                        'data': {1: 1},
+                    },
+                    {
+                        't': '2015-01-02T00:00:00',
+                        'data': {1: 2},
+                    },
+                    {
+                        't': '2015-01-03T00:00:00',
+                        'data': {1: 3},
+                    }
+                ],
                 'streams': [{'device': {'key': 'foo'}, 'id': 1}],
                 'next_page': {'next_query': None}}
 
         cursor = StreamResponseCursor(None, data, Fetcher())
         stream = cursor.bind_stream(device_key='foo')
-        data = [s for s in stream]
+        data = [s.value for s in stream]
         self.assertEquals(data, [1, 2, 3, 4, 5, 6])
 
     def test_bind_multiple_streams_with_single_page(self):
@@ -390,9 +442,20 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         def fetcher(cursor):
             raise StopIteration
 
-        data = {'data': [{1: 1, 2: 1},
-                         {1: 2, 2: 2},
-                         {1: 3, 2: 3}],
+        data = {'data': [
+                    {
+                        't': '2015-01-01T00:00:00',
+                        'data': {1: 1, 2: 1},
+                    },
+                    {
+                        't': '2015-01-02T00:00:00',
+                        'data': {1: 2, 2: 2},
+                    },
+                    {
+                        't': '2015-01-03T00:00:00',
+                        'data': {1: 3, 2: 3},
+                    }
+                ],
                 'streams': [
                     {'device': {'key': 'foo'}, 'id': 1},
                     {'device': {'key': 'bar'}, 'id': 2}
@@ -402,8 +465,8 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         cursor = StreamResponseCursor(None, data, fetcher)
         stream1 = cursor.bind_stream(device_key='foo')
         stream2 = cursor.bind_stream(device_key='bar')
-        data1 = [s for s in stream1]
-        data2 = [s for s in stream2]
+        data1 = [s.value for s in stream1]
+        data2 = [s.value for s in stream2]
         self.assertEquals(data1, [1, 2, 3])
         self.assertEquals(data2, [1, 2, 3])
 
@@ -418,20 +481,42 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                 if self.iters == 1:
                     raise StopIteration
                 else:
-                    data = {'data': [{1: 4, 2: 4},
-                                     {1: 5},
-                                     {1: 6, 2: 6}],
-                            'streams': [
-                                {'device': {'key': 'foo'}, 'id': 1},
-                                {'device': {'key': 'bar'}, 'id': 2}
+                    data = {'data': [
+                            {
+                                't': '2015-01-01T00:00:00',
+                                'data': {1: 4, 2: 4},
+                            },
+                            {
+                                't': '2015-01-02T00:00:00',
+                                'data': {1: 5},
+                            },
+                            {
+                                't': '2015-01-03T00:00:00',
+                                'data': {1: 6, 2: 6},
+                            }
                             ],
-                            'next_page': {'next_query': None}}
+                        'streams': [
+                            {'device': {'key': 'foo'}, 'id': 1},
+                            {'device': {'key': 'bar'}, 'id': 2}
+                        ],
+                        'next_page': {'next_query': None}}
                     self.iters += 1
                     return data
 
-        data = {'data': [{1: 1, 2: 1},
-                         {1: 2, 2: 2},
-                         {1: 3, 2: 3}],
+        data = {'data': [
+                    {
+                        't': '2015-01-01T00:00:00',
+                        'data': {1: 1, 2: 1},
+                    },
+                    {
+                        't': '2015-01-02T00:00:00',
+                        'data': {1: 2, 2: 2},
+                    },
+                    {
+                        't': '2015-01-03T00:00:00',
+                        'data': {1: 3, 2: 3},
+                    }
+                ],
                 'streams': [
                     {'device': {'key': 'foo'}, 'id': 1},
                     {'device': {'key': 'bar'}, 'id': 2}
@@ -441,8 +526,8 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         cursor = StreamResponseCursor(None, data, Fetcher())
         stream1 = cursor.bind_stream(device_key='foo')
         stream2 = cursor.bind_stream(device_key='bar')
-        data1 = [s for s in stream1]
-        data2 = [s for s in stream2]
+        data1 = [s.value for s in stream1]
+        data2 = [s.value for s in stream2]
         self.assertEquals(data1, [1, 2, 3, 4, 5, 6])
         self.assertEquals(data2, [1, 2, 3, 4, 6])
 
@@ -457,20 +542,42 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                 if self.iters >= 2:
                     raise StopIteration
                 else:
-                    data = {'data': [{1: 1, 2: 4},
-                                     {1: 2},
-                                     {1: 3, 2: 6}],
-                            'streams': [
-                                {'device': {'key': 'foo'}, 'id': 1},
-                                {'device': {'key': 'bar'}, 'id': 2}
+                    data = {'data': [
+                            {
+                                't': '2015-01-01T00:00:00',
+                                'data': {1: 1, 2: 4},
+                            },
+                            {
+                                't': '2015-01-02T00:00:00',
+                                'data': {1: 2},
+                            },
+                            {
+                                't': '2015-01-03T00:00:00',
+                                'data': {1: 3, 2: 6},
+                            }
                             ],
-                            'next_page': {'next_query': None}}
+                        'streams': [
+                            {'device': {'key': 'foo'}, 'id': 1},
+                            {'device': {'key': 'bar'}, 'id': 2}
+                        ],
+                        'next_page': {'next_query': None}}
                     self.iters += 1
                     return data
 
-        data = {'data': [{1: 1, 2: 4},
-                         {1: 2},
-                         {1: 3, 2: 6}],
+        data = {'data': [
+                    {
+                        't': '2015-01-01T00:00:00',
+                        'data': {1: 1, 2: 1},
+                    },
+                    {
+                        't': '2015-01-02T00:00:00',
+                        'data': {1: 2, 2: 2},
+                    },
+                    {
+                        't': '2015-01-03T00:00:00',
+                        'data': {1: 3, 2: 3},
+                    }
+                ],
                 'streams': [
                     {'device': {'key': 'foo'}, 'id': 1},
                     {'device': {'key': 'bar'}, 'id': 2}
@@ -484,10 +591,10 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         iters = 0
         while iters < 6:
             iterator = iter(stream1)
-            data1.append(iterator.next())
+            data1.append(iterator.next().value)
             iters += 1
         self.assertEquals(cursor.manager.pages[0].data, None)
-        data2 = [s for s in stream2]
+        data2 = [s.value for s in stream2]
         self.assertEquals(data1, [1, 2, 3, 1, 2, 3])
         self.assertEquals(data2, [4, 6, 4, 6])
 
@@ -502,30 +609,51 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                 if self.iters == 1:
                     raise StopIteration
                 else:
-                    data = {'data': [{1: 4, 2: 4},
-                                     {1: 5},
-                                     {1: 6, 2: 6}],
-                            'streams': [
-                                {'device': {'key': 'foo'}, 'id': 1},
-                                {'device': {'key': 'bar'}, 'id': 2}
+                    data = {'data': [
+                            {
+                                't': '2015-01-01T00:00:00',
+                                'data': {1: 4, 2: 4},
+                            },
+                            {
+                                't': '2015-01-02T00:00:00',
+                                'data': {1: 5},
+                            },
+                            {
+                                't': '2015-01-03T00:00:00',
+                                'data': {1: 6, 2: 6},
+                            }
                             ],
-                            'next_page': {'next_query': None}}
+                        'streams': [
+                            {'device': {'key': 'foo'}, 'id': 1},
+                            {'device': {'key': 'bar'}, 'id': 2}
+                        ],
+                        'next_page': {'next_query': None}}
                     self.iters += 1
                     return data
 
-        data = {'data': [{1: 1, 2: 1},
-                         {1: 2, 2: 2},
-                         {1: 3, 2: 3}],
+        data = {'data': [
+                    {
+                        't': '2015-01-01T00:00:00',
+                        'data': {1: 1, 2: 1},
+                    },
+                    {
+                        't': '2015-01-02T00:00:00',
+                        'data': {1: 2, 2: 2},
+                    },
+                    {
+                        't': '2015-01-03T00:00:00',
+                        'data': {1: 3, 2: 3},
+                    }
+                ],
                 'streams': [
                     {'device': {'key': 'foo'}, 'id': 1},
                     {'device': {'key': 'bar'}, 'id': 2}
                 ],
                 'next_page': {'next_query': None}}
-
         cursor = StreamResponseCursor(None, data, Fetcher())
         streams = cursor.streams
         stream_data = []
         for stream in streams:
-            stream_data.append([s for s in stream])
+            stream_data.append([s.value for s in stream])
         self.assertEquals(stream_data[0], [1, 2, 3, 4, 5, 6])
         self.assertEquals(stream_data[1], [1, 2, 3, 4, 6])
