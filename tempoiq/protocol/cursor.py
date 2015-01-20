@@ -216,6 +216,12 @@ class StreamResponseCursor(Cursor):
         self.stream_info = StreamInfo(data['streams'])
         self.manager = StreamManager(self, data, self.page_size)
 
+    def __iter__(self):
+        streams = self.streams
+        iterators = [(s, iter(s)) for s in streams]
+        for stream, it in iterators:
+            yield ((stream.device, stream.sensor), it.next())
+
     def _fetch_next(self):
         try:
             cursor_obj = self._raw_data['next_page']['next_query']
