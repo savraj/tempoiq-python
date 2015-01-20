@@ -2,6 +2,7 @@ import unittest
 import pytz
 import datetime
 from tempoiq.protocol.row import Row, SelectionEvaluator, StreamInfo
+from tempoiq.protocol.row import PointStream
 from tempoiq.protocol.row import NoResultError, TooManyResultsError
 from tempoiq.protocol.query.selection import Selection, or_, and_
 from tempoiq.protocol.device import Device
@@ -92,6 +93,8 @@ class TestRow(unittest.TestCase):
         ]
         self.assertEquals(values, expected)
 
+
+class TestSelectionEvaluator(unittest.TestCase):
     def test_selection_evaluator_with_device_key_selector(self):
         headers = [
             {'device': {'key': 'foo', 'name': 'bar',
@@ -348,6 +351,7 @@ class TestRow(unittest.TestCase):
         self.assertEquals(len(results), 1)
         self.assertEquals(results[0]['id'], 0)
 
+class TestStreamInfo(unittest.TestCase):
     def test_stream_info_get_one_returns_one(self):
         headers = [
             {'device': {'key': 'foo', 'name': 'bar',
@@ -401,3 +405,29 @@ class TestRow(unittest.TestCase):
         streams = StreamInfo(headers)
         with self.assertRaises(TooManyResultsError):
             streams.get_one(sensor_name='bar')
+
+
+class TestPointStream(unittest.TestCase):
+    def test_get_device(self):
+        info = {'device': {'key': 'foo', 'name': 'bar',
+                           'attributes': {'baz': 'boz', 'foo': 'bar'}},
+                'sensor': {'key': 'foo', 'name': 'bar',
+                           'attributes': {'baz': 'boz'}},
+                'id': 0}
+        stream = PointStream(info, None)
+        self.assertEquals(stream.device.key, 'foo')
+        self.assertEquals(stream.device.name, 'bar')
+        self.assertEquals(stream.device.attributes,
+                          {'baz': 'boz', 'foo': 'bar'})
+
+    def test_get_sensor(self):
+        info = {'device': {'key': 'foo', 'name': 'bar',
+                           'attributes': {'baz': 'boz', 'foo': 'bar'}},
+                'sensor': {'key': 'foo', 'name': 'bar',
+                           'attributes': {'baz': 'boz'}},
+                'id': 0}
+        stream = PointStream(info, None)
+        self.assertEquals(stream.sensor.key, 'foo')
+        self.assertEquals(stream.sensor.name, 'bar')
+        self.assertEquals(stream.sensor.attributes,
+                          {'baz': 'boz'})

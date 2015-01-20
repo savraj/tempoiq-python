@@ -1,3 +1,4 @@
+import uuid
 from tempoiq.temporal.validate import convert_iso_stamp
 from device import Device
 from sensor import Sensor
@@ -44,7 +45,10 @@ class PointStream(object):
         self.stream_info = stream_info
         self.manager = manager
         self._id = stream_info['id']
-        self.key = self._id
+        self.key = str(uuid.uuid1())
+        self._device = None
+        self._sensor = None
+        self.function = stream_info.get('function')
 
     def __iter__(self):
         while True:
@@ -53,6 +57,22 @@ class PointStream(object):
             if value is None:
                 continue
             yield value
+
+    @property
+    def device(self):
+        if self._device is None:
+            si = self.stream_info['device']
+            self._device = Device(si['key'], si.get('name', ''),
+                                  si['attributes'])
+        return self._device
+
+    @property
+    def sensor(self):
+        if self._sensor is None:
+            si = self.stream_info['sensor']
+            self._sensor = Sensor(si['key'], si.get('name', ''),
+                                  si['attributes'])
+        return self._sensor
 
 
 class StreamInfo(object):
