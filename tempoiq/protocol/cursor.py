@@ -118,9 +118,10 @@ class DataPointsCursor(Cursor):
 
 
 class Page(object):
-    def __init__(self, data, cursor_obj):
+    def __init__(self, data, cursor_obj, collectible=True):
         self.data = data
         self.cursor_obj = cursor_obj
+        self.is_collectible = collectible
 
     def garbage_collect(self):
         self.data = None
@@ -141,8 +142,11 @@ class StreamManager(object):
     MAX_PAGES = 100
 
     def __init__(self, cursor, starting_data, page_size):
-        cursor_obj = starting_data['next_page']['next_query']
-        self.pages = {0: Page(starting_data['data'], cursor_obj)}
+        if starting_data.get('next_page') is not None:
+            cursor_obj = starting_data['next_page']['next_query']
+        else:
+            cursor_obj = None
+        self.pages = {0: Page(starting_data['data'], None, False)}
         self.active_pages = 1
         self.receiver_pointers = {}
         self.active_pointers = defaultdict(set)
@@ -157,14 +161,17 @@ class StreamManager(object):
             for k in self.pages:
                 if len(self.active_pointers[k]) == 0:
                     page = self.pages[k]
-                    page.garbage_collect()
-                    self.active_pages -= 1
+                    if page.is_collectible:
+                        page.garbage_collect()
+                        self.active_pages -= 1
+                        to_collect -= 1
+                        if to_collect == 0:
+                            break
+                    else:
+                        continue
                     #dont want to be too aggressive here, we are guaranteeing
                     #max memory used and trying to keep network traffic
                     #to a minimum
-                    to_collect -= 1
-                    if to_collect == 0:
-                        break
             current_iters += 1
 
     def _update_active_pointers(self, key, page_num):
@@ -227,6 +234,8 @@ class StreamResponseCursor(Cursor):
             cursor_obj = self._raw_data['next_page']['next_query']
             new_data = self.fetcher(cursor_obj)
             self._raw_data = new_data
+            if len(new_data['data']) == 0:
+                raise StopIteration
             return new_data, cursor_obj
         except KeyError:
             raise StopIteration

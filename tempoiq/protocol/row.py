@@ -45,7 +45,7 @@ class PointStream(object):
     def __init__(self, stream_info, manager):
         self.stream_info = stream_info
         self.manager = manager
-        self._id = stream_info['id']
+        self._id = str(stream_info['id'])
         self.key = str(uuid.uuid1())
         self._device = None
         self._sensor = None
