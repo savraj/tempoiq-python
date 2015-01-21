@@ -194,12 +194,15 @@ class TestProtocolStreamManager(unittest.TestCase):
         data = {'data': [1, 2, 3], 'next_page': {'next_query': None}}
         ds = StreamManager(cursor, data, 3)
         page2 = Page([4, 5, 6], None)
-        ds.active_pages += 1
+        page3 = Page([7, 8, 9], None)
         ds.pages[1] = page2
-        ds.active_pointers[1].add('key1')
+        ds.pages[2] = page3
+        ds.active_pages += 2
+        ds.active_pointers[2].add('key1')
         ds._garbage_collect()
-        self.assertEquals(ds.pages[0].data, None)
-        self.assertEquals(ds.pages[1].data, [4, 5, 6])
+        self.assertEquals(ds.pages[0].data, [1, 2, 3])
+        self.assertEquals(ds.pages[1].data, None)
+        self.assertEquals(ds.pages[2].data, [7, 8, 9])
 
     def test_garbage_collection_doesnt_loop_infinitely(self):
         StreamManager.MAX_PAGES = 1
@@ -257,10 +260,14 @@ class TestProtocolStreamManager(unittest.TestCase):
         self.assertEquals(ds.active_pointers[0], set(['key1']))
         ds.next(receiver1)
         ds.next(receiver1)
-        data = ds.next(receiver1)
+        ds.next(receiver1)
         self.assertEquals(ds.active_pointers[1], set(['key1']))
-        self.assertEquals(ds.pages[0].data, None)
-        self.assertEquals(ds.pages[1].data, [4, 5, 6])
+        ds.next(receiver1)
+        ds.next(receiver1)
+        data = ds.next(receiver1)
+        self.assertEquals(ds.active_pointers[2], set(['key1']))
+        self.assertEquals(ds.pages[0].data, [1, 2, 3])
+        self.assertEquals(ds.pages[1].data, None)
         self.assertEquals(data, 4)
 
     def test_new_page_fetch_over_limit_forces_a_gc_2(self):
@@ -293,7 +300,7 @@ class TestProtocolStreamManager(unittest.TestCase):
         self.assertEquals(data, 6)
 
     def test_reconstruction_of_old_page(self):
-        StreamManager.MAX_PAGES = 2
+        StreamManager.MAX_PAGES = 1
         cursor = Dummy()
 
         def _fetch_next():
@@ -316,15 +323,19 @@ class TestProtocolStreamManager(unittest.TestCase):
             ds.next(receiver1)
             iters += 1
         data1 = ds.next(receiver1)
+        ds.next(receiver2)
+        ds.next(receiver2)
+        ds.next(receiver2)
+        ds.next(receiver2)
         data2 = ds.next(receiver2)
-        self.assertEquals(ds.active_pointers[0], set(['key2']))
-        self.assertEquals(ds.active_pointers[1], set([]))
+        self.assertEquals(ds.active_pointers[0], set([]))
+        self.assertEquals(ds.active_pointers[1], set(['key2']))
         self.assertEquals(ds.active_pointers[2], set(['key1']))
-        self.assertEquals(ds.pages[0].data, [7, 8, 9])
-        self.assertEquals(ds.pages[1].data, [4, 5, 6])
+        self.assertEquals(ds.pages[0].data, [1, 2, 3])
+        self.assertEquals(ds.pages[1].data, [7, 8, 9])
         self.assertEquals(ds.pages[2].data, [4, 5, 6])
         self.assertEquals(data1, 6)
-        self.assertEquals(data2, 7)
+        self.assertEquals(data2, 8)
 
 
 class TestProtocolStreamResponseCursor(unittest.TestCase):
@@ -337,15 +348,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data = {'data': [
                     {
                         't': '2015-01-01T00:00:00',
-                        'data': {1: 1},
+                        'data': {'1': 1},
                     },
                     {
                         't': '2015-01-02T00:00:00',
-                        'data': {1: 2},
+                        'data': {'1': 2},
                     },
                     {
                         't': '2015-01-03T00:00:00',
-                        'data': {1: 3},
+                        'data': {'1': 3},
                     }
                 ],
                 'streams': [{'device': {'key': 'foo'}, 'id': 1}],
@@ -365,7 +376,7 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data = {'data': [
                     {
                         't': '2015-01-01T00:00:00',
-                        'data': {1: 1},
+                        'data': {'1': 1},
                     },
                     {
                         't': '2015-01-02T00:00:00',
@@ -373,7 +384,7 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                     },
                     {
                         't': '2015-01-03T00:00:00',
-                        'data': {1: 3},
+                        'data': {'1': 3},
                     }
                 ],
                 'streams': [{'device': {'key': 'foo'}, 'id': 1}],
@@ -398,15 +409,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                     data = {'data': [
                         {
                             't': '2015-01-01T00:00:00',
-                            'data': {1: 4},
+                            'data': {'1': 4},
                         },
                         {
                             't': '2015-01-02T00:00:00',
-                            'data': {1: 5},
+                            'data': {'1': 5},
                         },
                         {
                             't': '2015-01-03T00:00:00',
-                            'data': {1: 6},
+                            'data': {'1': 6},
                         }
                     ],
                     'streams': [{'device': {'key': 'foo'}, 'id': 1}],
@@ -417,15 +428,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data = {'data': [
                     {
                         't': '2015-01-01T00:00:00',
-                        'data': {1: 1},
+                        'data': {'1': 1},
                     },
                     {
                         't': '2015-01-02T00:00:00',
-                        'data': {1: 2},
+                        'data': {'1': 2},
                     },
                     {
                         't': '2015-01-03T00:00:00',
-                        'data': {1: 3},
+                        'data': {'1': 3},
                     }
                 ],
                 'streams': [{'device': {'key': 'foo'}, 'id': 1}],
@@ -445,15 +456,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data = {'data': [
                     {
                         't': '2015-01-01T00:00:00',
-                        'data': {1: 1, 2: 1},
+                        'data': {'1': 1, '2': 1},
                     },
                     {
                         't': '2015-01-02T00:00:00',
-                        'data': {1: 2, 2: 2},
+                        'data': {'1': 2, '2': 2},
                     },
                     {
                         't': '2015-01-03T00:00:00',
-                        'data': {1: 3, 2: 3},
+                        'data': {'1': 3, '2': 3},
                     }
                 ],
                 'streams': [
@@ -484,15 +495,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                     data = {'data': [
                             {
                                 't': '2015-01-01T00:00:00',
-                                'data': {1: 4, 2: 4},
+                                'data': {'1': 4, '2': 4},
                             },
                             {
                                 't': '2015-01-02T00:00:00',
-                                'data': {1: 5},
+                                'data': {'1': 5},
                             },
                             {
                                 't': '2015-01-03T00:00:00',
-                                'data': {1: 6, 2: 6},
+                                'data': {'1': 6, '2': 6},
                             }
                             ],
                         'streams': [
@@ -506,15 +517,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data = {'data': [
                     {
                         't': '2015-01-01T00:00:00',
-                        'data': {1: 1, 2: 1},
+                        'data': {'1': 1, '2': 1},
                     },
                     {
                         't': '2015-01-02T00:00:00',
-                        'data': {1: 2, 2: 2},
+                        'data': {'1': 2, '2': 2},
                     },
                     {
                         't': '2015-01-03T00:00:00',
-                        'data': {1: 3, 2: 3},
+                        'data': {'1': 3, '2': 3},
                     }
                 ],
                 'streams': [
@@ -539,21 +550,21 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                 self.iters = 0
 
             def __call__(self, cursor):
-                if self.iters >= 2:
+                if self.iters >= 3:
                     raise StopIteration
                 else:
                     data = {'data': [
                             {
                                 't': '2015-01-01T00:00:00',
-                                'data': {1: 1, 2: 4},
+                                'data': {'1': 1, '2': 4},
                             },
                             {
                                 't': '2015-01-02T00:00:00',
-                                'data': {1: 2},
+                                'data': {'1': 2},
                             },
                             {
                                 't': '2015-01-03T00:00:00',
-                                'data': {1: 3, 2: 6},
+                                'data': {'1': 3, '2': 6},
                             }
                             ],
                         'streams': [
@@ -567,15 +578,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data = {'data': [
                     {
                         't': '2015-01-01T00:00:00',
-                        'data': {1: 1, 2: 1},
+                        'data': {'1': 1, '2': 1},
                     },
                     {
                         't': '2015-01-02T00:00:00',
-                        'data': {1: 2, 2: 2},
+                        'data': {'1': 2, '2': 2},
                     },
                     {
                         't': '2015-01-03T00:00:00',
-                        'data': {1: 3, 2: 3},
+                        'data': {'1': 3, '2': 3},
                     }
                 ],
                 'streams': [
@@ -589,14 +600,14 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         stream2 = cursor.bind_stream(device_key='bar')
         data1 = []
         iters = 0
-        while iters < 6:
+        while iters < 7:
             iterator = iter(stream1)
             data1.append(iterator.next().value)
             iters += 1
-        self.assertEquals(cursor.manager.pages[0].data, None)
+        self.assertEquals(cursor.manager.pages[1].data, None)
         data2 = [s.value for s in stream2]
-        self.assertEquals(data1, [1, 2, 3, 1, 2, 3])
-        self.assertEquals(data2, [4, 6, 4, 6])
+        self.assertEquals(data1, [1, 2, 3, 1, 2, 3, 1])
+        self.assertEquals(data2, [1, 2, 3, 4, 6, 4, 6])
 
     def test_two_dimensional_iteration(self):
         StreamManager.MAX_PAGES = 2
@@ -612,15 +623,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
                     data = {'data': [
                             {
                                 't': '2015-01-01T00:00:00',
-                                'data': {1: 4, 2: 4},
+                                'data': {'1': 4, '2': 4},
                             },
                             {
                                 't': '2015-01-02T00:00:00',
-                                'data': {1: 5},
+                                'data': {'1': 5},
                             },
                             {
                                 't': '2015-01-03T00:00:00',
-                                'data': {1: 6, 2: 6},
+                                'data': {'1': 6, '2': 6},
                             }
                             ],
                         'streams': [
@@ -634,15 +645,15 @@ class TestProtocolStreamResponseCursor(unittest.TestCase):
         data = {'data': [
                     {
                         't': '2015-01-01T00:00:00',
-                        'data': {1: 1, 2: 1},
+                        'data': {'1': 1, '2': 1},
                     },
                     {
                         't': '2015-01-02T00:00:00',
-                        'data': {1: 2, 2: 2},
+                        'data': {'1': 2, '2': 2},
                     },
                     {
                         't': '2015-01-03T00:00:00',
-                        'data': {1: 3, 2: 3},
+                        'data': {'1': 3, '2': 3},
                     }
                 ],
                 'streams': [
