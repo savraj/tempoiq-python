@@ -285,6 +285,34 @@ class TestReadEncoder(unittest.TestCase):
         }
         self.assertEquals(json.loads(j), expected)
 
+    def test_query_builder_with_ordering(self):
+        qb = QueryBuilder(self.client, Sensor)
+        start = datetime.datetime(2014, 1, 1, 12, 0)
+        end = datetime.datetime(2014, 1, 3, 12, 0)
+        rollup_start = datetime.datetime(2014, 1, 1, 0, 0)
+        qb.filter(Device.key == 'foo')
+        qb.order_by('date_created', 'asc')
+        qb.read(start=start, end=end)
+        j = json.dumps(qb, default=self.read_encoder.default)
+        expected = {
+            'search': {
+                'select': 'sensors',
+                'filters': {
+                    'devices': {'key': 'foo'},
+                    'sensors': 'all'
+                },
+                'ordering': {
+                    'attribute': 'date_created',
+                    'direction': 'asc'
+                }
+            },
+            'read': {
+                'start': '2014-01-01T12:00:00',
+                'stop': '2014-01-03T12:00:00'
+            }
+        }
+        self.assertEquals(json.loads(j), expected)
+
     def test_query_builder_sensor_only_search(self):
         qb = QueryBuilder(self.client, Device)
         qb.filter(Sensor.key == 'foo')

@@ -39,6 +39,7 @@ class QueryBuilder(object):
             'sensors': Selection(),
             'rules': Selection()
         }
+        self.ordering = None
         self.pipeline = []
         self.operation = None
 
@@ -175,6 +176,12 @@ class QueryBuilder(object):
         """
         self.pipeline.append(MultiRollup(functions, period, start))
         return self
+
+    def order_by(self, attr, direction):
+        self.ordering = {
+            'attribute': attr,
+            'direction': direction
+        }
 
     def rollup(self, function, period, start=None):
         """Apply a rollup function to the query.
