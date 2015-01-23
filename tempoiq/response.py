@@ -1,5 +1,6 @@
 import json
-from protocol.cursor import DeviceCursor, DataPointsCursor
+from protocol.cursor import DeviceCursor, StreamResponseCursor
+from protocol.cursor import DataPointsCursor
 from protocol.decoder import TempoIQDecoder
 
 
@@ -13,7 +14,7 @@ class ResponseException(Exception):
 
     def __init__(self, response):
         self.response = response
-        self.msg = 'TempoDB response returned status: %d' % response.status
+        self.msg = 'TempoIQ response returned status: %d' % response.status
 
     def __repr__(self):
         return self.msg
@@ -23,7 +24,7 @@ class ResponseException(Exception):
 
 
 class Response(object):
-    """Represents responses from the TempoDB API.  The Response object has
+    """Represents responses from the TempoIQ API.  The Response object has
     several useful attributes after it is created:
 
         * successful: whether the overall request was successful (see below)
@@ -88,6 +89,17 @@ class SensorPointsResponse(Response):
 
     def parse(self, body):
         self.data = DataPointsCursor(self, json.loads(body), self.fetcher)
+
+
+class StreamResponse(Response):
+    def __init__(self, resp, session, fetcher):
+        super(StreamResponse, self).__init__(resp, session)
+        self.fetcher = fetcher
+        if self.successful == SUCCESS:
+            self.parse(self.body)
+
+    def parse(self, body):
+        self.data = StreamResponseCursor(self, json.loads(body), self.fetcher)
 
 
 class RuleResponse(Response):

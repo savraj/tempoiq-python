@@ -146,11 +146,18 @@ class ReadEncoder(TempoIQEncoder):
         else:
             name = 'or'
 
+        object_type = None
         result = []
         for selector in clause.selectors:
             if isinstance(selector, (AndClause, OrClause)):
                 result.append(self.encode_compound_clause(selector))
             elif isinstance(selector, ScalarSelector):
+                if object_type is None:
+                    object_type = selector.selection_type
+                else:
+                    if object_type != selector.selection_type:
+                        msg = 'Selectors in a compound clause must be of uniform type'
+                        raise TypeError(msg)
                 result.append(self.encode_scalar_selector(selector))
             else:
                 raise ValueError("invalid selector type")

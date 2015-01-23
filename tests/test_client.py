@@ -4,7 +4,7 @@ import datetime
 from tempoiq.session import get_session
 from tempoiq.protocol.device import Device
 from tempoiq.client import *
-from tempoiq.endpoint import merge_headers
+from tempoiq.endpoint import merge_headers, media_type
 from monkey import monkeypatch_requests
 
 
@@ -40,11 +40,33 @@ class TestClient(unittest.TestCase):
         query = {}
         j = json.dumps(query, default=self.client.create_encoder.default)
         url = 'http://test.tempo-iq.com/v2/read/'
-        accept_headers = [ERROR_ACCEPT_TYPE, DATAPOINT_ACCEPT_TYPE]
-        content_header = QUERY_CONTENT_TYPE
+        DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v2')
+        accept_headers = [self.client.ERROR_ACCEPT_TYPE,
+                          self.client.DATAPOINT_ACCEPT_TYPE]
+        content_header = self.client.QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
-        self.client.read(query)
+        resp = self.client.read(query)
+        self.assertIsInstance(resp, SensorPointsResponse)
+        self.client.endpoint.pool.get.assert_called_once_with(
+            url, data=j, auth=self.client.endpoint.auth,
+            headers=merged)
+
+    def test_client_sends_non_default_media_type_in_read_query(self):
+        query = {}
+        j = json.dumps(query, default=self.client.create_encoder.default)
+        url = 'http://test.tempo-iq.com/v2/read/'
+        self.client = get_session('http://test.tempo-iq.com/', 'foo', 'bar',
+                                  read_version='v3')
+        monkeypatch_requests(self.client.endpoint)
+        DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v3')
+        accept_headers = [self.client.ERROR_ACCEPT_TYPE,
+                          self.client.DATAPOINT_ACCEPT_TYPE]
+        content_header = self.client.QUERY_CONTENT_TYPE
+        headers = media_types(accept_headers, content_header)
+        merged = merge_headers(self.client.endpoint.headers, headers)
+        resp = self.client.read(query)
+        self.assertIsInstance(resp, StreamResponse)
         self.client.endpoint.pool.get.assert_called_once_with(
             url, data=j, auth=self.client.endpoint.auth,
             headers=merged)
@@ -53,8 +75,9 @@ class TestClient(unittest.TestCase):
         query = {}
         j = json.dumps(query, default=self.client.create_encoder.default)
         url = 'http://test.tempo-iq.com/v2/devices/'
-        accept_headers = [ERROR_ACCEPT_TYPE, DEVICE_ACCEPT_TYPE]
-        content_header = QUERY_CONTENT_TYPE
+        accept_headers = [self.client.ERROR_ACCEPT_TYPE,
+                          self.client.DEVICE_ACCEPT_TYPE]
+        content_header = self.client.QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
         self.client.search_devices(query)
