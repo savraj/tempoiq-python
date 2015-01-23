@@ -41,8 +41,9 @@ class TestClient(unittest.TestCase):
         j = json.dumps(query, default=self.client.create_encoder.default)
         url = 'http://test.tempo-iq.com/v2/read/'
         DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v2')
-        accept_headers = [ERROR_ACCEPT_TYPE, DATAPOINT_ACCEPT_TYPE]
-        content_header = QUERY_CONTENT_TYPE
+        accept_headers = [self.client.ERROR_ACCEPT_TYPE,
+                          self.client.DATAPOINT_ACCEPT_TYPE]
+        content_header = self.client.QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
         resp = self.client.read(query)
@@ -59,8 +60,9 @@ class TestClient(unittest.TestCase):
                                   read_version='v3')
         monkeypatch_requests(self.client.endpoint)
         DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v3')
-        accept_headers = [ERROR_ACCEPT_TYPE, DATAPOINT_ACCEPT_TYPE]
-        content_header = QUERY_CONTENT_TYPE
+        accept_headers = [self.client.ERROR_ACCEPT_TYPE,
+                          self.client.DATAPOINT_ACCEPT_TYPE]
+        content_header = self.client.QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
         resp = self.client.read(query)
@@ -73,8 +75,9 @@ class TestClient(unittest.TestCase):
         query = {}
         j = json.dumps(query, default=self.client.create_encoder.default)
         url = 'http://test.tempo-iq.com/v2/devices/'
-        accept_headers = [ERROR_ACCEPT_TYPE, DEVICE_ACCEPT_TYPE]
-        content_header = QUERY_CONTENT_TYPE
+        accept_headers = [self.client.ERROR_ACCEPT_TYPE,
+                          self.client.DEVICE_ACCEPT_TYPE]
+        content_header = self.client.QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         merged = merge_headers(self.client.endpoint.headers, headers)
         self.client.search_devices(query)

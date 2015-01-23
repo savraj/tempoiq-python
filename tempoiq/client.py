@@ -9,12 +9,6 @@ from response import RuleResponse, DeviceResponse, ResponseException
 from endpoint import media_type, media_types
 
 
-ERROR_ACCEPT_TYPE = media_type('error', 'v1')
-DEVICE_ACCEPT_TYPE = media_type('device-collection', 'v2')
-DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection', 'v3')
-QUERY_CONTENT_TYPE = media_type('query', 'v1')
-
-
 def escape(s):
     return urllib.quote(s, safe='')
 
@@ -86,9 +80,11 @@ class Client(object):
     def __init__(self, endpoint, read_version='v2'):
         self.endpoint = endpoint
         self.monitoring_client = MonitoringClient(self.endpoint)
-        global DATAPOINT_ACCEPT_TYPE
-        DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection',
+        self.DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection',
                                            read_version)
+        self.ERROR_ACCEPT_TYPE = media_type('error', 'v1')
+        self.DEVICE_ACCEPT_TYPE = media_type('device-collection', 'v2')
+        self.QUERY_CONTENT_TYPE = media_type('query', 'v1')
         self.read_version = read_version
 
     def create_device(self, device):
@@ -158,8 +154,8 @@ class Client(object):
     def read(self, query):
         url = urlparse.urljoin(self.endpoint.base_url, 'read/')
         j = json.dumps(query, default=self.read_encoder.default)
-        accept_headers = [ERROR_ACCEPT_TYPE, DATAPOINT_ACCEPT_TYPE]
-        content_header = QUERY_CONTENT_TYPE
+        accept_headers = [self.ERROR_ACCEPT_TYPE, self.DATAPOINT_ACCEPT_TYPE]
+        content_header = self.QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         resp = self.endpoint.get(url, j, headers=headers)
         fetcher = make_fetcher(self.endpoint, url, headers)
@@ -172,8 +168,8 @@ class Client(object):
         #TODO - actually use the size param
         url = urlparse.urljoin(self.endpoint.base_url, 'devices/')
         j = json.dumps(query, default=self.read_encoder.default)
-        accept_headers = [ERROR_ACCEPT_TYPE, DEVICE_ACCEPT_TYPE]
-        content_header = QUERY_CONTENT_TYPE
+        accept_headers = [self.ERROR_ACCEPT_TYPE, self.DEVICE_ACCEPT_TYPE]
+        content_header = self.QUERY_CONTENT_TYPE
         headers = media_types(accept_headers, content_header)
         fetcher = make_fetcher(self.endpoint, url, headers)
         return DeviceResponse(self.endpoint.get(url, j, headers=headers),
