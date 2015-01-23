@@ -186,6 +186,9 @@ class ReadEncoder(TempoIQEncoder):
             builder.operation.name: builder.operation.args
         }
 
+        if builder.ordering is not None:
+            j['search']['ordering'] = builder.ordering
+
         if not j['search']['filters']['devices']:
             if not j['search']['filters']['sensors']:
                 j['search']['filters']['devices'] = 'all'
