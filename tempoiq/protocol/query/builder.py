@@ -182,6 +182,7 @@ class QueryBuilder(object):
             'attribute': attr,
             'direction': direction
         }
+        return self
 
     def rollup(self, function, period, start=None):
         """Apply a rollup function to the query.
