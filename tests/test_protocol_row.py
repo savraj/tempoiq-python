@@ -385,8 +385,7 @@ class TestStreamInfo(unittest.TestCase):
         ]
 
         streams = StreamInfo(headers)
-        with self.assertRaises(NoResultError):
-            streams.get_one(device_key='blarg')
+        self.assertRaises(NoResultError, streams.get_one, device_key='blarg')
 
     def test_stream_info_get_one_returns_two_raises_error(self):
         headers = [
@@ -403,8 +402,8 @@ class TestStreamInfo(unittest.TestCase):
         ]
 
         streams = StreamInfo(headers)
-        with self.assertRaises(TooManyResultsError):
-            streams.get_one(sensor_name='bar')
+        self.assertRaises(TooManyResultsError, streams.get_one,
+                          sensor_name='bar')
 
 
 class TestPointStream(unittest.TestCase):

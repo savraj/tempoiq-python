@@ -155,8 +155,8 @@ class TestReadEncoder(unittest.TestCase):
         clause = or_([Device.key == 'foo', Sensor.key == 'bar'])
         selection = Selection()
         selection.add(clause)
-        with self.assertRaises(TypeError):
-            json.dumps(selection, default=self.read_encoder.default)
+        self.assertRaises(TypeError, json.dumps, selection,
+                          default=self.read_encoder.default)
 
     def test_encode_empty_selection(self):
         selection = Selection()
