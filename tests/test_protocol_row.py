@@ -45,8 +45,8 @@ class TestRow(unittest.TestCase):
 
         row = Row(data)
         tz = pytz.timezone("US/Eastern")
-        self.assertEquals(row.timestamp, datetime.datetime(2014, 1, 1,
-                                                           tzinfo=tz))
+        dt = tz.localize(datetime.datetime(2014, 1, 1))
+        self.assertEquals(row.timestamp, dt)
 
     def test_row_dict_like_access(self):
         data = {
