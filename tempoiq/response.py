@@ -14,7 +14,7 @@ class ResponseException(Exception):
 
     def __init__(self, response):
         self.response = response
-        self.msg = 'TempoDB response returned status: %d' % response.status
+        self.msg = 'TempoIQ response returned status: %d' % response.status
 
     def __repr__(self):
         return self.msg
@@ -24,7 +24,7 @@ class ResponseException(Exception):
 
 
 class Response(object):
-    """Represents responses from the TempoDB API.  The Response object has
+    """Represents responses from the TempoIQ API.  The Response object has
     several useful attributes after it is created:
 
         * successful: whether the overall request was successful (see below)
