@@ -182,6 +182,13 @@ class Client(object):
         return SensorPointsResponse(self.endpoint.get(url, j), self.endpoint,
                                     fetcher)
 
+    def update_rule(self, rule):
+        route = 'monitors/%s' % rule.key
+        url = urlparse.urljoin(self.endpoint.base_url, route)
+        rule_json = json.dumps(rule, default=self.write_encoder.default)
+        resp = self.endpoint.put(url, rule_json)
+        return RuleResponse(resp, self.endpoint)
+
     def write(self, write_request):
         """Write data points to one or more devices and sensors.
 

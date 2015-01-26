@@ -105,9 +105,9 @@ class TestTempoIQDecoder(unittest.TestCase):
         rule = {
             'name': 'one rule to rule them all',
             'key': 'foo',
-            'action': {
+            'actions': [{
                 'url': 'http://www.foo.bar'
-            },
+            }],
             'conditions': [
                 {
                     'trigger': {
@@ -154,9 +154,9 @@ class TestTempoIQDecoder(unittest.TestCase):
         rule = {
             'name': 'one rule to rule them all',
             'key': 'foo',
-            'action': {
+            'actions': [{
                 'url': 'http://www.foo.bar'
-            },
+            }],
             'conditions': [
                 {
                     'trigger': {

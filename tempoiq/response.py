@@ -105,8 +105,11 @@ class StreamResponse(Response):
 class RuleResponse(Response):
     def __init__(self, resp, session):
         super(RuleResponse, self).__init__(resp, session)
-        if self.successful == SUCCESS:
+        print self.body
+        if self.successful == SUCCESS and self.body != '':
             self.parse(self.body)
+        else:
+            self.data = None
 
     def parse(self, body):
         decoder = TempoIQDecoder()
