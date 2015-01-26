@@ -2,6 +2,7 @@ from rule import Rule, Condition, Trigger, Filter, Webhook
 from device import Device
 from sensor import Sensor
 from query.selection import Selection, ScalarSelector, AndClause, OrClause
+import json
 
 
 def decode_attributes_selector(selector, selection_type='devices'):
@@ -40,6 +41,8 @@ def decode_compound_clause(selectors, selection_type='devices', t='and'):
 
 def decode_selection(selection, selection_type='devices'):
     s = Selection()
+    if selection == 'all':
+        return s
     for k in selection:
         if k in ['and', 'or']:
             selector = decode_compound_clause(selection[k], selection_type, k)
@@ -86,7 +89,7 @@ class TempoIQDecoder(object):
         name = rule['rule']['name']
         key = rule['rule']['key']
         alert_by = rule['alerts']
-        action = Webhook(rule['rule']['action']['url'])
+        action = Webhook(rule['rule']['actions'][0]['url'])
 
         conditions = []
         for c in rule['rule']['conditions']:

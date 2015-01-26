@@ -51,24 +51,36 @@ class WriteEncoder(TempoIQEncoder):
     def encode_rule(self, rule):
         read_encoder = ReadEncoder()
         j = {
-            'conditions': map(self.encode_condition, rule.conditions),
-            'name': rule.name,
-            'alerts': rule.alert_by,
-            'actions': [self.default(rule.action)],
-            'selection': {
-                'search': {
-                    'filters': {
-                        'devices': read_encoder.default(
-                            rule.selection['devices']),
-                        'sensors': read_encoder.default(
-                            rule.selection['sensors'])
-                    }
+            'search': {
+                'select': 'sensors',
+                'filters': {
+                    'devices': read_encoder.default(
+                        rule.selection['devices']),
+                    'sensors': read_encoder.default(
+                        rule.selection['sensors'])
                 }
+            },
+            'alerts': rule.alert_by,
+            'rule': {
+                'conditions': map(self.encode_condition, rule.conditions),
+                'name': rule.name,
+                'actions': [self.default(rule.action)],
             }
         }
 
+        if not j['search']['filters']['devices']:
+            if not j['search']['filters']['sensors']:
+                j['search']['filters']['devices'] = 'all'
+                j['search']['filters']['sensors'] = 'all'
+            else:
+                j['search']['filters']['devices'] = 'all'
+        else:
+            if not j['search']['filters']['sensors']:
+                j['search']['filters']['sensors'] = 'all'
+
         if rule.key is not None:
-            j['key'] = rule.key
+            j['rule']['key'] = rule.key
+
         return j
 
     def encode_sensor(self, sensor):
