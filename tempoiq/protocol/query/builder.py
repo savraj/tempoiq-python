@@ -3,7 +3,7 @@ import exceptions
 from selection import Selection, ScalarSelector, OrClause, AndClause
 from selection import Compound, DictSelectable
 from functions import *
-from tempoiq.protocol import Rule
+from tempoiq.protocol.rule import Rule
 from tempoiq.tempo_exceptions import TempoIQDeprecationWarning
 
 
@@ -45,9 +45,7 @@ class QueryBuilder(object):
 
     def _handle_monitor_read(self, **kwargs):
         key = extract_key_for_monitoring(self.selection['rules'])
-        method_name = kwargs['__method$$']
-        method = getattr(self.client.monitoring_client, method_name)
-        return method(key)
+        return self.client.monitoring_client.get_rule(key)
 
     def _normalize_pipeline_functions(self, start, end):
         for function in self.pipeline:
@@ -83,13 +81,13 @@ class QueryBuilder(object):
         return self
 
     def annotations(self):
-        if not isinstance(self.object_type, Rule):
+        if self.object_type != 'rules':
             raise TypeError('Annotations only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_annotations(key)
 
     def changes(self):
-        if not isinstance(self.object_type, Rule):
+        if self.object_type != 'rules':
             raise TypeError('Changes only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_changelog(key)
@@ -157,7 +155,7 @@ class QueryBuilder(object):
         return self
 
     def logs(self):
-        if not isinstance(self.object_type, Rule):
+        if self.object_type != 'rules':
             raise TypeError('Logs only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_logs(key)
@@ -225,7 +223,6 @@ class QueryBuilder(object):
                                           {'quantifier': 'all'})
             return self.client.search_devices(self)
         elif self.object_type == 'rules':
-            kwargs['__method$$'] = 'get_rule'
             return self._handle_monitor_read(**kwargs)
         else:
             msg = 'Only sensors, devices, and rules can be selected'
@@ -258,7 +255,7 @@ class QueryBuilder(object):
         self.single('latest', include_selection=include_selection)
 
     def usage(self):
-        if not isinstance(self.object_type, Rule):
+        if self.object_type != 'rules':
             raise TypeError('Usage only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_usage(key)

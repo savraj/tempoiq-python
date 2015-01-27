@@ -1,5 +1,6 @@
 import unittest
 import json
+import datetime
 from tempoiq.protocol.query.selection import AndClause
 from tempoiq.protocol.decoder import *
 
@@ -192,6 +193,60 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(len(decoded[0].conditions), 1)
         self.assertTrue(isinstance(decoded[0].action, Webhook))
 
+    def test_decoder_for_list_of_rule_kv_pairs(self):
+        j = {
+            'key1': 'name1',
+            'key2': 'name2',
+            'key3': 'name3'
+        }
+        decoder = TempoIQDecoder()
+        decoder.decoder = decoder.decode_rule_list
+        decoded = json.loads(json.dumps(j), object_hook=decoder)
+        self.assertEquals(len(decoded), 3)
+        self.assertTrue(isinstance(decoded[0], Rule))
+        for rule in decoded:
+            if rule.key == 'key1':
+                self.assertEquals(rule.name, 'name1')
+            elif rule.key == 'key2':
+                self.assertEquals(rule.name, 'name2')
+            elif rule.key == 'key3':
+                self.assertEquals(rule.name, 'name3')
+            else:
+                self.assertFalse(True)
+
+    def test_decoder_for_rule_usage(self):
+        j = {
+            "data": [
+                {
+                    "timestamp": "2015-01-26T00:00:00.000Z",
+                    "metricType": "partitions",
+                    "count": 0
+                },
+                {
+                    "timestamp": "2015-01-26T00:00:00.000Z",
+                    "metricType": "datapoints",
+                    "count": 27
+                },
+                {
+                    "timestamp": "2015-01-26T00:00:00.000Z",
+                    "metricType": "actions_triggered",
+                    "count": 9
+                },
+                {
+                    "timestamp": "2015-01-27T00:00:00.000Z",
+                    "metricType": "partitions",
+                    "count": 32
+                }
+            ]
+        }
+        decoder = TempoIQDecoder()
+        decoder.decoder = decoder.decode_rule_usage
+        decoded = json.loads(json.dumps(j), object_hook=decoder)
+        self.assertEquals(len(decoded), 2)
+        self.assertTrue(isinstance(decoded[0], RuleUsage))
+        self.assertEquals(decoded[0].datapoints, 27)
+        self.assertEquals(decoded[1].partitions, 32)
+
     def test_device_decoder(self):
         j = """{
                  "key": "test-dev",
@@ -212,5 +267,3 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(decoded.key, 'test-dev')
         self.assertEquals(decoded.attributes['type'], 'blarg')
         self.assertEquals(decoded.sensors[0].key, 'vals')
-
-

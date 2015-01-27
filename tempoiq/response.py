@@ -102,10 +102,10 @@ class StreamResponse(Response):
         self.data = StreamResponseCursor(self, json.loads(body), self.fetcher)
 
 
-class RuleResponse(Response):
-    def __init__(self, resp, session):
-        super(RuleResponse, self).__init__(resp, session)
-        print self.body
+class MonitoringResponse(Response):
+    def __init__(self, resp, session, decoder_method=None):
+        super(MonitoringResponse, self).__init__(resp, session)
+        self.decoder_method = decoder_method
         if self.successful == SUCCESS and self.body != '':
             self.parse(self.body)
         else:
@@ -113,6 +113,9 @@ class RuleResponse(Response):
 
     def parse(self, body):
         decoder = TempoIQDecoder()
+        if self.decoder_method is not None:
+            decoder.decoder = getattr(decoder, self.decoder_method)
+
         self.data = json.loads(body, object_hook=decoder)
 
 

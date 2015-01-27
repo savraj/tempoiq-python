@@ -5,7 +5,7 @@ from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, DeleteDatapointsResponse
 from response import StreamResponse
-from response import RuleResponse, DeviceResponse, ResponseException
+from response import MonitoringResponse, DeviceResponse, ResponseException
 from endpoint import media_type, media_types
 
 
@@ -49,21 +49,22 @@ class MonitoringClient(object):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/%s/logs/' % key)
         resp = self.endpoint.get(url)
-        return Response(resp, self.endpoint)
+        return MonitoringResponse(resp, self.endpoint, 'decode_rule_logs')
 
     def get_rule(self, key):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/' + key)
-        return RuleResponse(self.endpoint.get(url), self)
+        return MonitoringResponse(self.endpoint.get(url), self)
 
     def get_usage(self, key):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/%s/usage/' % key)
         resp = self.endpoint.get(url)
-        return Response(resp, self.endpoint)
+        return MonitoringResponse(resp, self.endpoint, 'decode_rule_usage')
 
     def list_rules(self):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
-        return RuleResponse(self.endpoint.get(url), self)
+        return MonitoringResponse(self.endpoint.get(url), self,
+                                  'decode_rule_list')
 
 
 class Client(object):
@@ -140,7 +141,7 @@ class Client(object):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
         rule_json = json.dumps(rule, default=self.write_encoder.default)
         resp = self.endpoint.post(url, rule_json)
-        return RuleResponse(resp, self.endpoint)
+        return MonitoringResponse(resp, self.endpoint)
 
     def query(self, object_type):
         """Begin to build a query on the given object type.
@@ -187,7 +188,7 @@ class Client(object):
         url = urlparse.urljoin(self.endpoint.base_url, route)
         rule_json = json.dumps(rule, default=self.write_encoder.default)
         resp = self.endpoint.put(url, rule_json)
-        return RuleResponse(resp, self.endpoint)
+        return MonitoringResponse(resp, self.endpoint)
 
     def write(self, write_request):
         """Write data points to one or more devices and sensors.
