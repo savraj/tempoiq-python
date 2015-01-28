@@ -1,8 +1,10 @@
+import operator
 from rule import Rule, Condition, Trigger, Filter, Webhook
 from device import Device
 from sensor import Sensor
+from log import RuleLog, RuleUsage, RuleUsageMetric
 from query.selection import Selection, ScalarSelector, AndClause, OrClause
-import json
+from tempoiq.temporal.validate import convert_iso_stamp
 
 
 def decode_attributes_selector(selector, selection_type='devices'):
@@ -52,6 +54,22 @@ def decode_selection(selection, selection_type='devices'):
     return s
 
 
+def merge_metrics(metrics):
+    tstamp_to_metric = {}
+    for m in metrics:
+        if tstamp_to_metric.get(m.timestamp) is not None:
+            tstamp_to_metric[m.timestamp].add_metric(
+                m.metric_name,
+                m.metric_value)
+        else:
+            merged = RuleUsage(m.timestamp)
+            merged.add_metric(m.metric_name, m.metric_value)
+            tstamp_to_metric[m.timestamp] = merged
+    return [v for v in
+            sorted(tstamp_to_metric.itervalues(),
+                   key=operator.attrgetter('timestamp'))]
+
+
 class DeviceDecoder(object):
     def __init__(self):
         pass
@@ -67,7 +85,8 @@ class DeviceDecoder(object):
         name = dct['name']
         sensors = []
         for s in dct['sensors']:
-            _sensor = Sensor(s['key'], name=s['name'], attributes=s['attributes'])
+            _sensor = Sensor(s['key'], name=s['name'],
+                             attributes=s['attributes'])
             sensors.append(_sensor)
 
         return Device(key, name=name, attributes=attributes, sensors=sensors)
@@ -75,10 +94,10 @@ class DeviceDecoder(object):
 
 class TempoIQDecoder(object):
     def __init__(self):
-        pass
+        self.decoder = self.decode
 
     def __call__(self, dct):
-        return self.decode(dct)
+        return self.decoder(dct)
 
     def decode(self, dct):
         if dct.get('rule'):
@@ -111,6 +130,26 @@ class TempoIQDecoder(object):
 
         return Rule(name, alert_by=alert_by, key=key, conditions=conditions,
                     action=action, selection=selection)
+
+    def decode_rule_list(self, dct):
+        rules = []
+        for key, name in dct.iteritems():
+            rules.append(Rule(name, key=key))
+        return rules
+
+    def decode_rule_logs(self, dct):
+        if dct.get('data') is not None:
+            return dct['data']
+        else:
+            return RuleLog(dct['logId'], dct['event'],
+                           convert_iso_stamp(dct['createdAt']))
+
+    def decode_rule_usage(self, dct):
+        if dct.get('data') is not None:
+            return merge_metrics(dct['data'])
+        else:
+            return RuleUsageMetric(convert_iso_stamp(dct['timestamp']),
+                                   dct['metricType'], dct['count'])
 
     def decode_selection(self, dct):
         pass
