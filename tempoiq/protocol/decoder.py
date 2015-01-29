@@ -1,5 +1,5 @@
 import operator
-from rule import Rule, Condition, Trigger, Filter, Webhook
+from rule import Rule, Condition, Trigger, Filter, Webhook, Email
 from device import Device
 from sensor import Sensor
 from log import RuleLog, RuleUsage, RuleUsageMetric
@@ -108,7 +108,11 @@ class TempoIQDecoder(object):
         name = rule['rule']['name']
         key = rule['rule']['key']
         alert_by = rule['alerts']
-        action = Webhook(rule['rule']['actions'][0]['url'])
+        action_json = rule['rule']['actions'][0]
+        if action_json.get('url'):
+            action = Webhook(action_json['url'])
+        else:
+            action = Email(action_json['address'])
 
         conditions = []
         for c in rule['rule']['conditions']:
