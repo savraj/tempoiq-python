@@ -20,7 +20,8 @@ class WriteEncoder(TempoIQEncoder):
         'datetime': 'encode_datetime',
         'Rule': 'encode_rule',
         'Trigger': 'encode_trigger',
-        'Webhook': 'encode_webhook'
+        'Webhook': 'encode_webhook',
+        'Email': 'encode_email'
     }
 
     def default(self, o):
@@ -95,6 +96,11 @@ class WriteEncoder(TempoIQEncoder):
     def encode_webhook(self, webhook):
         return {
             'url': webhook.url
+        }
+
+    def encode_email(self, email):
+        return {
+            'address': email.address
         }
 
 

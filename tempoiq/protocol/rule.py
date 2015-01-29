@@ -42,3 +42,8 @@ class Action(object):
 class Webhook(Action):
     def __init__(self, url):
         self.url = url
+
+
+class Email(Action):
+    def __init__(self, address):
+        self.address = address
