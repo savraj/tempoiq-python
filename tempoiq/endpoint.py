@@ -44,6 +44,17 @@ def media_type(media_resource, media_version, suffix='json'):
     return 'application/prs.tempoiq.%s.%s+%s' % (
         media_resource, media_version, suffix)
 
+def construct_url(host, secure, port):
+    if "://" in host:
+        url = host.rstrip('/')
+    else:
+        url = "https://" if secure else "http://"
+        url += host
+
+    if port:
+        url += ":{}".format(port)
+
+    return url
 
 class HTTPEndpoint(object):
     """Represents an HTTP endpoint for accessing a REST API.  Provides
@@ -51,17 +62,17 @@ class HTTPEndpoint(object):
     call the methods on this class, use the :class:`tempoiq.client.Client`
     class instead.
 
-    :param string base_url: the base URL for the endpoint
+    :param string host: the host of the endpoint URL
     :param string key: the API key for the endpoint
-    :param string secret: the API secret for the endpoint"""
+    :param string secret: the API secret for the endpoint
+    :param bool secure: whether to use the HTTPS protocol. Default is True
+    :param int port: the port for connecting to the endpoint. Default is the
+                    standard port for HTTP or HTTPS, depending on whether
+                    secure is True"""
 
-    def __init__(self, base_url, key, secret):
-        if base_url.endswith('/'):
-            self.base_url = base_url + 'v2/'
-        else:
-            #in case people use their own, it really has to end in a
-            #slash so the urljoins will work properly
-            self.base_url = base_url + '/v2/'
+    def __init__(self, host, key, secret, secure=True, port=None):
+        url = construct_url(host, secure, port)
+        self.base_url = url + '/v2/'
 
         self.headers = {
             'User-Agent': 'tempoiq-python/%s' % "1.0.2",
