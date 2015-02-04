@@ -52,7 +52,7 @@ def construct_url(host, secure, port):
         url += host
 
     if port:
-        url += ":{}".format(port)
+        url += ":" + str(port)
 
     return url
 
