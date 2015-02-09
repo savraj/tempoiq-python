@@ -138,7 +138,8 @@ class TempoIQDecoder(object):
         return Rule(name, alert_by=alert_by, key=key, conditions=conditions,
                     action=action, selection=selection, status=status)
 
-    def decode_rule_list(self, arr):
+    def decode_rule_list(self, dct):
+        arr = dct.get('data') or []
         return map(self.decode_rule, arr)
 
     def decode_rule_logs(self, dct):
