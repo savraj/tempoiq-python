@@ -71,3 +71,18 @@ class Edge(object):
         self.instigator = instigator
         self.edge = edge
         self.action_logs = action_logs
+
+
+class Alert(object):
+    def __init__(self, alert_id, rule_key, edges):
+        self.id = alert_id
+        self.rule_key = rule_key
+        self.edges = edges
+
+    def is_resolved(self):
+        resolved = False
+        for edge in self.edges:
+            if edge.edge == 'falling':
+                resolved = True
+                break
+        return resolved

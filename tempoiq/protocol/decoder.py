@@ -1,6 +1,6 @@
 import operator
 from rule import Rule, Condition, Trigger, Filter, Webhook, Email
-from rule import ActionLog, Instigator, Edge
+from rule import ActionLog, Instigator, Edge, Alert
 from device import Device
 from sensor import Sensor
 from point import Point
@@ -112,6 +112,9 @@ class TempoIQDecoder(object):
                          action['action_type'])
 
     def decode_alert(self, alert):
+        #see comment in decode_instigator for why this is here
+        if not alert.get('alert_id'):
+            return alert
         decoded_edges = []
         for edge in alert['edges']:
             tstamp = convert_iso_stamp(edge['timestamp'])
@@ -120,8 +123,13 @@ class TempoIQDecoder(object):
             action_logs = [self.decode_action_log(a) for a in edge['actions']]
             edge_obj = Edge(tstamp, instigator, edge_direction, action_logs)
             decoded_edges.append(edge_obj)
+        return Alert(alert['alert_id'], alert['rule_key'], decoded_edges)
 
     def decode_instigator(self, instigator):
+        #the python json library will loop nested objects back into this
+        #method individually, so if that happens return them back unchanged
+        if not instigator.get('datapoint'):
+            return instigator
         #throw this in here so we can reuse the device decode method
         instigator['device']['sensors'] = []
         device = DeviceDecoder().decode_device(instigator['device'])

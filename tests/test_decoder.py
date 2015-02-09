@@ -247,6 +247,97 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(decoded[0].datapoints, 27)
         self.assertEquals(decoded[1].partitions, 32)
 
+    def test_decoder_for_action_log(self):
+        j = """{
+                    "payload": "test payload",
+                    "recipient": "me",
+                    "response": "all good",
+                    "status": "200",
+                    "action_type": "webhook"
+                }"""
+
+        decoder = TempoIQDecoder()
+        decoder.decoder = decoder.decode_action_log
+        decoded = json.loads(j, object_hook=decoder)
+        self.assertEquals(decoded.payload, 'test payload')
+        self.assertEquals(decoded.recipient, 'me')
+        self.assertEquals(decoded.response, 'all good')
+        self.assertEquals(decoded.status, '200')
+        self.assertEquals(decoded.action_type, 'webhook')
+
+    def test_decoder_for_instigator(self):
+        j = """{
+                "datapoint": {
+                    "t": "2015-01-01T00:00:00.000Z",
+                    "v": 1
+                },
+                "device": {
+                    "key": "key-1",
+                    "name": "",
+                    "attributes": {
+                        "foo": "bar"
+                    }
+                },
+                "sensor": {
+                    "key": "temp",
+                    "name": "",
+                    "attributes": {}
+                }
+            }"""
+        decoder = TempoIQDecoder()
+        decoder.decoder = decoder.decode_instigator
+        decoded = json.loads(j, object_hook=decoder)
+        self.assertEquals(decoded.device.key, 'key-1')
+        self.assertEquals(decoded.sensor.key, 'temp')
+        self.assertEquals(decoded.point.value, 1)
+
+    def test_decoder_for_alert(self):
+        j = """{
+    "alert_id": 1,
+    "rule_key": "key-1",
+    "edges": [
+        {
+            "timestamp": "2015-01-01T00:00:00.000Z",
+            "instigator": {
+                "datapoint": {
+                    "t": "2015-01-01T00:00:00.000Z",
+                    "v": 1
+                },
+                "device": {
+                    "key": "key-1",
+                    "name": "",
+                    "attributes": {
+                        "foo": "bar"
+                    }
+                },
+                "sensor": {
+                    "key": "temp",
+                    "name": "",
+                    "attributes": {}
+                }
+            },
+            "edge": "rising",
+            "actions": [
+                {
+                    "payload": "test payload",
+                    "recipient": "me",
+                    "response": "all good",
+                    "status": "200",
+                    "action_type": "webhook"
+                }
+            ]
+        }
+    ]
+}"""
+
+        decoder = TempoIQDecoder()
+        decoder.decoder = decoder.decode_alert
+        decoded = json.loads(j, object_hook=decoder)
+        self.assertEquals(decoded.id, 1)
+        self.assertEquals(decoded.rule_key, 'key-1')
+        self.assertTrue(isinstance(decoded.edges[0], Edge))
+        self.assertTrue(isinstance(decoded.edges[0].instigator, Instigator))
+
     def test_device_decoder(self):
         j = """{
                  "key": "test-dev",
