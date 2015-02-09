@@ -47,3 +47,27 @@ class Webhook(Action):
 class Email(Action):
     def __init__(self, address):
         self.address = address
+
+
+class ActionLog(object):
+    def __init__(self, payload, recipient, response, status, action_type):
+        self.payload = payload
+        self.recipient = recipient
+        self.response = response
+        self.status = status
+        self.action_type = action_type
+
+
+class Instigator(object):
+    def __init__(self, point, device, sensor):
+        self.point = point
+        self.sensor = sensor
+        self.device = device
+
+
+class Edge(object):
+    def __init__(self, timestamp, instigator, edge, action_logs):
+        self.timestamp = timestamp
+        self.instigator = instigator
+        self.edge = edge
+        self.action_logs = action_logs
