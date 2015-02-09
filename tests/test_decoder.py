@@ -4,6 +4,7 @@ import datetime
 import copy
 from tempoiq.protocol.query.selection import AndClause
 from tempoiq.protocol.decoder import *
+from tempoiq.protocol.rule import RuleStatus
 
 
 class TestTempoIQDecoder(unittest.TestCase):
@@ -144,7 +145,7 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(decoded.alert_by, 'any')
         self.assertEquals(decoded.key, 'foo')
         self.assertEquals(len(decoded.conditions), 1)
-        self.assertEquals(decoded.status, 'logonly')
+        self.assertEquals(decoded.status, RuleStatus.LOGONLY)
         self.assertTrue(isinstance(decoded.action, Webhook))
 
     def test_decoder_for_list_of_rules(self):
