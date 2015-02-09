@@ -106,13 +106,15 @@ class TempoIQDecoder(object):
 
     def decode_rule(self, rule):
         name = rule['rule']['name']
-        key = rule['rule']['key']
         alert_by = rule['alerts']
-        action_json = rule['rule']['actions'][0]
-        if action_json.get('url'):
-            action = Webhook(action_json['url'])
-        else:
-            action = Email(action_json['address'])
+        key = rule['rule']['key']
+
+        selection = {
+            'devices': decode_selection(rule['search']['filters']['devices'],
+                                        selection_type='devices'),
+            'sensors': decode_selection(rule['search']['filters']['sensors'],
+                                        selection_type='sensors'),
+            }
 
         conditions = []
         for c in rule['rule']['conditions']:
@@ -125,15 +127,16 @@ class TempoIQDecoder(object):
             condition = Condition(filters, trigger)
             conditions.append(condition)
 
-        selection = {
-            'devices': decode_selection(rule['search']['filters']['devices'],
-                                        selection_type='devices'),
-            'sensors': decode_selection(rule['search']['filters']['sensors'],
-                                        selection_type='sensors'),
-        }
+        action_json = rule['rule']['actions'][0]
+        if action_json.get('url'):
+            action = Webhook(action_json['url'])
+        else:
+            action = Email(action_json['address'])
+
+        status = rule['rule'].get('status')
 
         return Rule(name, alert_by=alert_by, key=key, conditions=conditions,
-                    action=action, selection=selection)
+                    action=action, selection=selection, status=status)
 
     def decode_rule_list(self, dct):
         rules = []

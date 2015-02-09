@@ -130,7 +130,8 @@ class TestTempoIQDecoder(unittest.TestCase):
                         ]
                     }
                 }
-            ]
+            ],
+            'status': 'logonly'
         }
         j = {
             'rule': rule,
@@ -142,6 +143,7 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(decoded.alert_by, 'any')
         self.assertEquals(decoded.key, 'foo')
         self.assertEquals(len(decoded.conditions), 1)
+        self.assertEquals(decoded.status, 'logonly')
         self.assertTrue(isinstance(decoded.action, Webhook))
 
     def test_decoder_for_list_of_rules(self):

@@ -82,6 +82,9 @@ class WriteEncoder(TempoIQEncoder):
         if rule.key is not None:
             j['rule']['key'] = rule.key
 
+        if rule.status is not None:
+            j['rule']['status'] = rule.status
+
         return j
 
     def encode_sensor(self, sensor):

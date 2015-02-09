@@ -5,15 +5,14 @@ from query.selection import ScalarSelectable
 class Rule(object):
     key = ScalarSelectable('rules', 'key')
 
-    def __init__(self, name, alert_by=None, key=None, selection=None,
-                 conditions=[], action=None):
+    def __init__(self, name, alert_by=None, key=None, selection=None, conditions=None, action=None, status=None):
         self.name = name
         self.alert_by = alert_by
         self.key = key
         self.selection = selection
-        #make sure to avoid mutability of kwargs that default to list here
-        self.conditions = copy.deepcopy(conditions)
+        self.conditions = conditions if conditions else []
         self.action = action
+        self.status = status if status else "active"
 
 
 class Trigger(object):
@@ -47,3 +46,8 @@ class Webhook(Action):
 class Email(Action):
     def __init__(self, address):
         self.address = address
+
+
+class RuleStatus(object):
+    ACTIVE = "active"
+    LOGONLY = "logonly"
