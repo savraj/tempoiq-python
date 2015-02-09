@@ -1,5 +1,6 @@
 import warnings
 import exceptions
+import functools
 from selection import Selection, ScalarSelector, OrClause, AndClause
 from selection import Compound, DictSelectable
 from functions import *
@@ -24,6 +25,20 @@ def extract_key_for_monitoring(selection):
         return selection.selection.selectors[0].value
     else:
         return selection.selection.value
+
+
+class restrict_object_type(object):
+    def __init__(self, object_type):
+        self.object_type = object_type
+
+    def __call__(self1, f):
+        @functools.wraps(f)
+        def restricted(self2, *args, **kwargs):
+            if self2.object_type != self1.object_type:
+                msg = '%s only applies to %s'
+                raise TypeError(msg % (f.__name__.title(), self1.object_type))
+            return f(self2, *args, **kwargs)
+        return restricted
 
 
 class QueryBuilder(object):
@@ -80,15 +95,18 @@ class QueryBuilder(object):
         self.pipeline.append(Aggregation(function))
         return self
 
+    @restrict_object_type('rules')
+    def alert(self, alert_id):
+        key = extract_key_for_monitoring(self.selection['rules'])
+        return self.client.monitoring_client.get_alert(key, alert_id)
+
+    @restrict_object_type('rules')
     def annotations(self):
-        if self.object_type != 'rules':
-            raise TypeError('Annotations only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_annotations(key)
 
+    @restrict_object_type('rules')
     def changes(self):
-        if self.object_type != 'rules':
-            raise TypeError('Changes only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_changelog(key)
 
@@ -154,12 +172,12 @@ class QueryBuilder(object):
         self.pipeline.append(Interpolation(function, period))
         return self
 
+    @restrict_object_type('rules')
     def logs(self):
-        if self.object_type != 'rules':
-            raise TypeError('Logs only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_logs(key)
 
+    @restrict_object_type('sensors')
     def monitor(self, rule):
         if self.pipeline:
             warnings.warn(PIPEMSG, exceptions.FutureWarning)
@@ -228,6 +246,7 @@ class QueryBuilder(object):
             msg = 'Only sensors, devices, and rules can be selected'
             raise TypeError(msg)
 
+    @restrict_object_type('sensors')
     def single(self, function, timestamp=None, include_selection=False):
         """Make a single-point API call to the TempoIQ backend for this query.
 
@@ -235,17 +254,13 @@ class QueryBuilder(object):
                     each sensor. Ex: earliest, latest, before, after
         :param DateTime timestamp: required for all functions except earliest
         """
-        if self.object_type == 'sensors':
-            args = {'include_selection': include_selection,
-                    'function': function}
-            if timestamp is not None:
-                args['timestamp'] = timestamp
+        args = {'include_selection': include_selection,
+                'function': function}
+        if timestamp is not None:
+            args['timestamp'] = timestamp
 
-            self.operation = APIOperation('single', args)
-            return(self.client.single(self))
-        else:
-            msg = 'Single value only applies to sensors'
-            raise TypeError(msg)
+        self.operation = APIOperation('single', args)
+        return(self.client.single(self))
 
     def latest(self, include_selection=False):
         """Deprecated. Use the
@@ -254,8 +269,7 @@ class QueryBuilder(object):
         warnings.warn(LATESTMSG, TempoIQDeprecationWarning)
         self.single('latest', include_selection=include_selection)
 
+    @restrict_object_type('rules')
     def usage(self):
-        if self.object_type != 'rules':
-            raise TypeError('Usage only applies to monitoring rules')
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_usage(key)

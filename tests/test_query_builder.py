@@ -53,7 +53,7 @@ class TestQueryBuilder(unittest.TestCase):
         #this will raise an error which is fine, just want to check a side
         #effect
         try:
-            qb.latest()
+            qb.single('latest')
         except:
             pass
         self.assertEquals(qb.operation.name, 'single')
