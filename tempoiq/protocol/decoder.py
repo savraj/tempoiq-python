@@ -139,8 +139,10 @@ class TempoIQDecoder(object):
                     action=action, selection=selection, status=status)
 
     def decode_rule_list(self, dct):
-        arr = dct.get('data') or []
-        return map(self.decode_rule, arr)
+        if dct.get('data') is not None:
+            return [self.decode_rule(r) for r in dct['data']]
+        else:
+            return dct
 
     def decode_rule_logs(self, dct):
         if dct.get('data') is not None:
