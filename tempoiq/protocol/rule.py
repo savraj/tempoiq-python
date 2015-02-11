@@ -83,6 +83,7 @@ class Alert(object):
         self.rule_key = rule_key
         self.edges = edges
 
+    @property
     def is_resolved(self):
         resolved = False
         for edge in self.edges:
@@ -90,3 +91,15 @@ class Alert(object):
                 resolved = True
                 break
         return resolved
+
+    @property
+    def rising_edge(self):
+        for edge in self.edges:
+            if edge.edge == 'rising':
+                return edge
+
+    @property
+    def falling_edge(self):
+        for edge in self.edges:
+            if edge.edge == 'falling':
+                return edge

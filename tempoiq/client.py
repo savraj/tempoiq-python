@@ -35,8 +35,8 @@ class MonitoringClient(object):
 
     def get_alert(self, key, alert_id):
         url1 = urlparse.urljoin(self.endpoint.base_url,
-                                'monitors/' + key)
-        url = urlparse.urljoin(url1, 'alerts/' + alert_id)
+                                'monitors/' + key + '/')
+        url = urlparse.urljoin(url1, 'alerts/' + str(alert_id))
         resp = self.endpoint.get(url)
         return MonitoringResponse(resp, self.endpoint, 'decode_alert')
 
