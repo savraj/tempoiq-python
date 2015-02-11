@@ -1,10 +1,8 @@
 import unittest
 import json
 import datetime
-import copy
 from tempoiq.protocol.query.selection import AndClause
 from tempoiq.protocol.decoder import *
-from tempoiq.protocol.rule import RuleStatus
 
 
 class TestTempoIQDecoder(unittest.TestCase):
@@ -132,8 +130,7 @@ class TestTempoIQDecoder(unittest.TestCase):
                         ]
                     }
                 }
-            ],
-            'status': 'logonly'
+            ]
         }
         j = {
             'rule': rule,
@@ -145,7 +142,6 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(decoded.alert_by, 'any')
         self.assertEquals(decoded.key, 'foo')
         self.assertEquals(len(decoded.conditions), 1)
-        self.assertEquals(decoded.status, RuleStatus.LOGONLY)
         self.assertTrue(isinstance(decoded.action, Webhook))
 
     def test_decoder_for_list_of_rules(self):
@@ -198,74 +194,25 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertTrue(isinstance(decoded[0].action, Webhook))
 
     def test_decoder_for_list_of_rule_kv_pairs(self):
-        search = {
-            'select': 'sensors',
-            'filters': {
-                'devices': {'key': 'foo'},
-                'sensors': {'key': 'bar'}
-            }
+        j = {
+            'key1': 'name1',
+            'key2': 'name2',
+            'key3': 'name3'
         }
-        rule = {
-            'name': 'one rule to rule them all',
-            'key': 'add',
-            'actions': [{
-                'url': 'http://www.foo.bar'
-            }],
-            'conditions': [
-                {
-                    'trigger': {
-                        'name': 'exp_moving_average',
-                        'arguments': [
-                            'static',
-                            'lt',
-                            '300',
-                            '5'
-                        ]
-                    },
-                    'filter': {
-                        'and': [
-                            {
-                                'operation': 'select',
-                                'type': 'device_key',
-                                'arguments': ['foo']
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-        k1 = copy.deepcopy(rule)
-        k1['key'] = 'key1'
-        j1 = {
-            'rule': k1,
-            'search': search,
-            'alerts': 'any'
-        }
-
-        k2 = copy.deepcopy(rule)
-        k2['key'] = 'key2'
-        j2 = {
-            'rule': k2,
-            'search': search,
-            'alerts': 'any'
-        }
-
-        k3 = copy.deepcopy(rule)
-        k3['key'] = 'key3'
-        j3 = {
-            'rule': k3,
-            'search': search,
-            'alerts': 'any'
-        }
-
-        j = { 'data': [ j1, j2, j3] }
-
         decoder = TempoIQDecoder()
         decoder.decoder = decoder.decode_rule_list
         decoded = json.loads(json.dumps(j), object_hook=decoder)
         self.assertEquals(len(decoded), 3)
+        self.assertTrue(isinstance(decoded[0], Rule))
         for rule in decoded:
-          self.assertTrue(isinstance(rule, Rule))
+            if rule.key == 'key1':
+                self.assertEquals(rule.name, 'name1')
+            elif rule.key == 'key2':
+                self.assertEquals(rule.name, 'name2')
+            elif rule.key == 'key3':
+                self.assertEquals(rule.name, 'name3')
+            else:
+                self.assertFalse(True)
 
     def test_decoder_for_rule_usage(self):
         j = {
