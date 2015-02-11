@@ -5,7 +5,7 @@ from tempoiq import endpoint as p
 
 class TestEndpoint(unittest.TestCase):
     def setUp(self):
-        self.end = p.HTTPEndpoint('http://www.nothing.com', 'foo', 'bar')
+        self.end = p.HTTPEndpoint('www.nothing.com', 'foo', 'bar')
         monkeypatch_requests(self.end)
 
     def test_make_url_args_list(self):
@@ -53,13 +53,13 @@ class TestEndpoint(unittest.TestCase):
         self.assertEquals(ret, 'foo=2.0')
 
     def test_endpoint_constructor(self):
-        self.assertEquals(self.end.base_url, 'http://www.nothing.com/v2/')
+        self.assertEquals(self.end.base_url, 'https://www.nothing.com/v2/')
         self.assertEquals(self.end.headers['User-Agent'],
                           'tempoiq-python/%s' % '1.0.2')
         self.assertEquals(self.end.headers['Accept-Encoding'], 'gzip')
         self.assertTrue(hasattr(self.end, 'auth'))
 
-    def test_endpoint_constructor_with_slash(self):
+    def test_endpoint_constructor_with_schema(self):
         self.end = p.HTTPEndpoint('http://www.nothing.com', 'foo', 'bar')
         self.assertEquals(self.end.base_url, 'http://www.nothing.com/v2/')
         self.assertEquals(self.end.headers['User-Agent'],
@@ -67,13 +67,21 @@ class TestEndpoint(unittest.TestCase):
         self.assertEquals(self.end.headers['Accept-Encoding'], 'gzip')
         self.assertTrue(hasattr(self.end, 'auth'))
 
+    def test_make_url_with_port(self):
+        ret = p.construct_url('www.example.com', False, 8080)
+        self.assertEquals(ret, 'http://www.example.com:8080')
+
+    def test_make_url_with_trailing_slash(self):
+        ret = p.construct_url('http://www.example.com/', True, None)
+        self.assertEquals(ret, 'http://www.example.com')
+
     def test_endpoint_post(self):
         url = 'series/'
         body = 'foobar'
         self.end.pool.post.return_value = True
         self.end.post(url, body)
         self.end.pool.post.assert_called_once_with(
-            'http://www.nothing.com/v2/series/',
+            'https://www.nothing.com/v2/series/',
             data=body,
             headers=self.end.headers,
             auth=self.end.auth)
@@ -83,7 +91,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.pool.get.return_value = True
         self.end.get(url)
         self.end.pool.get.assert_called_once_with(
-            'http://www.nothing.com/v2/series/',
+            'https://www.nothing.com/v2/series/',
             data='',
             headers=self.end.headers,
             auth=self.end.auth)
@@ -94,7 +102,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.pool.put.return_value = True
         self.end.put(url, body)
         self.end.pool.put.assert_called_once_with(
-            'http://www.nothing.com/v2/series/',
+            'https://www.nothing.com/v2/series/',
             data=body,
             headers=self.end.headers,
             auth=self.end.auth)
@@ -104,7 +112,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.pool.delete.return_value = True
         self.end.delete(url)
         self.end.pool.delete.assert_called_once_with(
-            'http://www.nothing.com/v2/series/',
+            'https://www.nothing.com/v2/series/',
             data='',
             headers=self.end.headers,
             auth=self.end.auth)
@@ -116,7 +124,7 @@ class TestEndpoint(unittest.TestCase):
         self.end.get(url, headers=new_headers)
         merged = p.merge_headers(self.end.headers, new_headers)
         self.end.pool.get.assert_called_once_with(
-            'http://www.nothing.com/v2/series/',
+            'https://www.nothing.com/v2/series/',
             data='',
             headers=merged,
             auth=self.end.auth)
