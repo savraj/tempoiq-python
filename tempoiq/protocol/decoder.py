@@ -125,6 +125,9 @@ class TempoIQDecoder(object):
             decoded_edges.append(edge_obj)
         return Alert(alert['alert_id'], alert['rule_key'], decoded_edges)
 
+    def decode_alert_list(self, alert):
+        return map(self.decode_alert, alert['data'])
+
     def decode_instigator(self, instigator):
         #the python json library will loop nested objects back into this
         #method individually, so if that happens return them back unchanged
