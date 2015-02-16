@@ -46,14 +46,18 @@ def media_type(media_resource, media_version, suffix='json'):
 
 
 def construct_url(host, secure, port):
-    url = host.rstrip('/')
+    url = host
     if "://" not in host:
-        url = "".join(["https://" if secure else "http://", url])
+        domain = "https://" if secure else "http://"
+        url = "".join([domain, url])
 
+    # Strip trailing urls forward slashes for version appending in the endpoint
+    url = url.rstrip('/')
     if port:
         url += ":" + str(port)
 
     return url
+
 
 class HTTPEndpoint(object):
     """Represents an HTTP endpoint for accessing a REST API.  Provides
