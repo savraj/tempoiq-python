@@ -1,6 +1,6 @@
 import operator
 from rule import Rule, Condition, Trigger, Filter, Webhook, Email
-from rule import ActionLog, Instigator, Edge, Alert
+from rule import ActionLog, Instigator, Transition, Alert
 from device import Device
 from sensor import Sensor
 from point import Point
@@ -116,12 +116,13 @@ class TempoIQDecoder(object):
         if not alert.get('alert_id'):
             return alert
         decoded_edges = []
-        for edge in alert['edges']:
+        for edge in alert['transitions']:
             tstamp = convert_iso_stamp(edge['timestamp'])
             instigator = self.decode_instigator(edge['instigator'])
-            edge_direction = edge['edge']
+            edge_direction = edge['transition_to']
             action_logs = [self.decode_action_log(a) for a in edge['actions']]
-            edge_obj = Edge(tstamp, instigator, edge_direction, action_logs)
+            edge_obj = Transition(tstamp, instigator, edge_direction,
+                                  action_logs)
             decoded_edges.append(edge_obj)
         return Alert(alert['alert_id'], alert['rule_key'], decoded_edges)
 
@@ -153,7 +154,7 @@ class TempoIQDecoder(object):
                                         selection_type='devices'),
             'sensors': decode_selection(rule['search']['filters']['sensors'],
                                         selection_type='sensors'),
-            }
+        }
 
         conditions = []
         for c in rule['rule']['conditions']:

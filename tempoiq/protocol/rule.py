@@ -1,11 +1,11 @@
-import copy
 from query.selection import ScalarSelectable
 
 
 class Rule(object):
     key = ScalarSelectable('rules', 'key')
 
-    def __init__(self, name, alert_by=None, key=None, selection=None, conditions=None, action=None, status=None):
+    def __init__(self, name, alert_by=None, key=None, selection=None,
+                 conditions=None, action=None, status=None):
         self.name = name
         self.alert_by = alert_by
         self.key = key
@@ -69,11 +69,11 @@ class Instigator(object):
         self.device = device
 
 
-class Edge(object):
-    def __init__(self, timestamp, instigator, edge, action_logs):
+class Transition(object):
+    def __init__(self, timestamp, instigator, transition_type, action_logs):
         self.timestamp = timestamp
         self.instigator = instigator
-        self.edge = edge
+        self.to = transition_type
         self.action_logs = action_logs
 
 
