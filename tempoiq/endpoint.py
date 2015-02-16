@@ -44,12 +44,11 @@ def media_type(media_resource, media_version, suffix='json'):
     return 'application/prs.tempoiq.%s.%s+%s' % (
         media_resource, media_version, suffix)
 
+
 def construct_url(host, secure, port):
-    if "://" in host:
-        url = host.rstrip('/')
-    else:
-        url = "https://" if secure else "http://"
-        url += host
+    url = host.rstrip('/')
+    if "://" not in host:
+        url = "".join(["https://" if secure else "http://", url])
 
     if port:
         url += ":" + str(port)

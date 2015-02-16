@@ -75,6 +75,10 @@ class TestEndpoint(unittest.TestCase):
         ret = p.construct_url('http://www.example.com/', True, None)
         self.assertEquals(ret, 'http://www.example.com')
 
+    def test_make_url_with_trailing_slash_and_port(self):
+        ret = p.construct_url('example.com/', True, 8080)
+        self.assertEquals(ret, 'https://example.com:8080')
+
     def test_endpoint_post(self):
         url = 'series/'
         body = 'foobar'
