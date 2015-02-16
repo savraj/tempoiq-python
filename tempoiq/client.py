@@ -66,14 +66,14 @@ class MonitoringClient(object):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/%s/usage/' % key)
         resp = self.endpoint.get(url)
-        return AlertListResponse(resp, self.endpoint, 'decode_rule_usage')
+        return MonitoringResponse(resp, self.endpoint, 'decode_rule_usage')
 
     def list_alerts(self, key):
         url1 = urlparse.urljoin(self.endpoint.base_url,
                                 'monitors/' + key + '/')
         url = urlparse.urljoin(url1, 'alerts/')
         resp = self.endpoint.get(url)
-        return MonitoringResponse(resp, self.endpoint, 'decode_alert_list')
+        return AlertListResponse(resp, self.endpoint)
 
     def list_rules(self):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
