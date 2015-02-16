@@ -44,17 +44,20 @@ def media_type(media_resource, media_version, suffix='json'):
     return 'application/prs.tempoiq.%s.%s+%s' % (
         media_resource, media_version, suffix)
 
-def construct_url(host, secure, port):
-    if "://" in host:
-        url = host.rstrip('/')
-    else:
-        url = "https://" if secure else "http://"
-        url += host
 
+def construct_url(host, secure, port):
+    url = host
+    if "://" not in host:
+        domain = "https://" if secure else "http://"
+        url = "".join([domain, url])
+
+    # Strip trailing urls forward slashes for version appending in the endpoint
+    url = url.rstrip('/')
     if port:
         url += ":" + str(port)
 
     return url
+
 
 class HTTPEndpoint(object):
     """Represents an HTTP endpoint for accessing a REST API.  Provides

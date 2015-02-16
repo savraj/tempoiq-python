@@ -19,3 +19,4 @@ bin/
 include/
 lib/
 docs/build/
+.idea
