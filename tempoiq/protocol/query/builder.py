@@ -101,6 +101,11 @@ class QueryBuilder(object):
         return self.client.monitoring_client.get_alert(key, alert_id)
 
     @restrict_object_type('rules')
+    def alerts(self):
+        key = extract_key_for_monitoring(self.selection['rules'])
+        return self.client.monitoring_client.list_alerts(key)
+
+    @restrict_object_type('rules')
     def annotations(self):
         key = extract_key_for_monitoring(self.selection['rules'])
         return self.client.monitoring_client.get_annotations(key)

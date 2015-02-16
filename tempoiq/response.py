@@ -119,6 +119,19 @@ class MonitoringResponse(Response):
         self.data = json.loads(body, object_hook=decoder)
 
 
+class AlertListResponse(MonitoringResponse):
+    def __init__(self, resp, session):
+        super(AlertListResponse, self).__init__(resp, session,
+                                                'decode_alert_list')
+
+    def parse(self, body):
+        decoder = TempoIQDecoder()
+        if self.decoder_method is not None:
+            decoder.decoder = getattr(decoder, self.decoder_method)
+
+        self.data = json.loads(body, object_hook=decoder)['data']
+
+
 class DeleteDatapointsResponse(Response):
     def __init__(self, resp, session):
         super(DeleteDatapointsResponse, self).__init__(resp, session)

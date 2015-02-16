@@ -4,7 +4,7 @@ import urllib
 from protocol.encoder import WriteEncoder, CreateEncoder, ReadEncoder
 from protocol.query.builder import QueryBuilder
 from response import Response, SensorPointsResponse, DeleteDatapointsResponse
-from response import StreamResponse
+from response import StreamResponse, AlertListResponse
 from response import MonitoringResponse, DeviceResponse, ResponseException
 from endpoint import media_type, media_types
 
@@ -66,7 +66,14 @@ class MonitoringClient(object):
         url = urlparse.urljoin(self.endpoint.base_url,
                                'monitors/%s/usage/' % key)
         resp = self.endpoint.get(url)
-        return MonitoringResponse(resp, self.endpoint, 'decode_rule_usage')
+        return AlertListResponse(resp, self.endpoint, 'decode_rule_usage')
+
+    def list_alerts(self, key):
+        url1 = urlparse.urljoin(self.endpoint.base_url,
+                                'monitors/' + key + '/')
+        url = urlparse.urljoin(url1, 'alerts/')
+        resp = self.endpoint.get(url)
+        return MonitoringResponse(resp, self.endpoint, 'decode_alert_list')
 
     def list_rules(self):
         url = urlparse.urljoin(self.endpoint.base_url, 'monitors/')
@@ -89,7 +96,7 @@ class Client(object):
         self.endpoint = endpoint
         self.monitoring_client = MonitoringClient(self.endpoint)
         self.DATAPOINT_ACCEPT_TYPE = media_type('datapoint-collection',
-                                           read_version)
+                                                read_version)
         self.ERROR_ACCEPT_TYPE = media_type('error', 'v1')
         self.DEVICE_ACCEPT_TYPE = media_type('device-collection', 'v2')
         self.QUERY_CONTENT_TYPE = media_type('query', 'v1')

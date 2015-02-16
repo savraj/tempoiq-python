@@ -1,6 +1,5 @@
 import unittest
 import json
-import datetime
 import copy
 from tempoiq.protocol.query.selection import AndClause
 from tempoiq.protocol.decoder import *
@@ -258,14 +257,14 @@ class TestTempoIQDecoder(unittest.TestCase):
             'alerts': 'any'
         }
 
-        j = { 'data': [ j1, j2, j3] }
+        j = {'data': [j1, j2, j3]}
 
         decoder = TempoIQDecoder()
         decoder.decoder = decoder.decode_rule_list
         decoded = json.loads(json.dumps(j), object_hook=decoder)
         self.assertEquals(len(decoded), 3)
         for rule in decoded:
-          self.assertTrue(isinstance(rule, Rule))
+            self.assertTrue(isinstance(rule, Rule))
 
     def test_decoder_for_rule_usage(self):
         j = {
@@ -390,6 +389,54 @@ class TestTempoIQDecoder(unittest.TestCase):
         self.assertEquals(decoded.rule_key, 'key-1')
         self.assertTrue(isinstance(decoded.edges[0], Edge))
         self.assertTrue(isinstance(decoded.edges[0].instigator, Instigator))
+
+    def test_decoder_for_list_of_alerts(self):
+        j = """{"data":[{
+    "alert_id": 1,
+    "rule_key": "key-1",
+    "edges": [
+        {
+            "timestamp": "2015-01-01T00:00:00.000Z",
+            "instigator": {
+                "datapoint": {
+                    "t": "2015-01-01T00:00:00.000Z",
+                    "v": 1
+                },
+                "device": {
+                    "key": "key-1",
+                    "name": "",
+                    "attributes": {
+                        "foo": "bar"
+                    }
+                },
+                "sensor": {
+                    "key": "temp",
+                    "name": "",
+                    "attributes": {}
+                }
+            },
+            "edge": "rising",
+            "actions": [
+                {
+                    "payload": "test payload",
+                    "recipient": "me",
+                    "response": "all good",
+                    "status": "200",
+                    "action_type": "webhook"
+                }
+            ]
+        }
+    ]
+}]}"""
+
+        decoder = TempoIQDecoder()
+        decoder.decoder = decoder.decode_alert
+        decoded = json.loads(j, object_hook=decoder)
+        self.assertEquals(decoded['data'][0].id, 1)
+        self.assertEquals(decoded['data'][0].rule_key, 'key-1')
+        self.assertTrue(isinstance(decoded['data'][0].edges[0], Edge))
+        self.assertTrue(isinstance(decoded['data'][0].edges[0].instigator,
+                                   Instigator))
 
     def test_device_decoder(self):
         j = """{
