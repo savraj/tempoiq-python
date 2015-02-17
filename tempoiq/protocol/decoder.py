@@ -126,6 +126,8 @@ class TempoIQDecoder(object):
         return Alert(alert['alert_id'], alert['rule_key'], decoded_edges)
 
     def decode_alert_list(self, alert):
+        if alert.get('data') is None:
+            return alert
         return map(self.decode_alert, alert['data'])
 
     def decode_instigator(self, instigator):
