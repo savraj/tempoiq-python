@@ -116,13 +116,25 @@ class TempoIQDecoder(object):
         if not alert.get('alert_id'):
             return alert
         decoded_edges = []
-        for edge in alert['edges']:
-            tstamp = convert_iso_stamp(edge['timestamp'])
-            instigator = self.decode_instigator(edge['instigator'])
-            edge_direction = edge['edge']
-            action_logs = [self.decode_action_log(a) for a in edge['actions']]
-            edge_obj = Edge(tstamp, instigator, edge_direction, action_logs)
-            decoded_edges.append(edge_obj)
+        if alert.get("transitions"):
+            for transition in alert['transitions']:
+                tstamp = convert_iso_stamp(transition['timestamp'])
+                instigator = self.decode_instigator(transition['instigator'])
+                edge_direction = "rising" if transition['transition_to'] == "warning" else "falling"
+                action_logs = [self.decode_action_log(a) for a in transition['actions']]
+                edge_obj = Edge(tstamp, instigator, edge_direction, action_logs)
+                decoded_edges.append(edge_obj)
+        elif alert.get("edges", False):
+            for edge in alert['edges']:
+                tstamp = convert_iso_stamp(edge['timestamp'])
+                instigator = self.decode_instigator(edge['instigator'])
+                edge_direction = edge['edge']
+                action_logs = [self.decode_action_log(a) for a in edge['actions']]
+                edge_obj = Edge(tstamp, instigator, edge_direction, action_logs)
+                decoded_edges.append(edge_obj)
+        else:
+            decoded_edges = []
+
         return Alert(alert['alert_id'], alert['rule_key'], decoded_edges)
 
     def decode_alert_list(self, alert):
