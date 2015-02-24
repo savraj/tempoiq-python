@@ -129,7 +129,7 @@ class AlertListResponse(MonitoringResponse):
         if self.decoder_method is not None:
             decoder.decoder = getattr(decoder, self.decoder_method)
 
-        self.data = json.loads(body, object_hook=decoder)['data']
+        self.data = json.loads(body, object_hook=decoder)
 
 
 class DeleteDatapointsResponse(Response):

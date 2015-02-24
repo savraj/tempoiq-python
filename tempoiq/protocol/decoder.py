@@ -115,18 +115,22 @@ class TempoIQDecoder(object):
         #see comment in decode_instigator for why this is here
         if not alert.get('alert_id'):
             return alert
-        decoded_edges = []
-        for edge in alert['transitions']:
-            tstamp = convert_iso_stamp(edge['timestamp'])
-            instigator = self.decode_instigator(edge['instigator'])
-            edge_direction = edge['transition_to']
-            action_logs = [self.decode_action_log(a) for a in edge['actions']]
-            edge_obj = Transition(tstamp, instigator, edge_direction,
-                                  action_logs)
-            decoded_edges.append(edge_obj)
-        return Alert(alert['alert_id'], alert['rule_key'], decoded_edges)
+        decoded_transitions = []
+        for transition in alert['transitions']:
+            tstamp = convert_iso_stamp(transition['timestamp'])
+            instigator = self.decode_instigator(transition['instigator'])
+            transition_direction = transition['transition_to']
+            action_logs = [self.decode_action_log(a) for a
+                           in transition['actions']]
+            transition_obj = Transition(tstamp, instigator,
+                                        transition_direction,
+                                        action_logs)
+            decoded_transitions.append(transition_obj)
+        return Alert(alert['alert_id'], alert['rule_key'], decoded_transitions)
 
     def decode_alert_list(self, alert):
+        if alert.get('data') is None:
+            return alert
         return map(self.decode_alert, alert['data'])
 
     def decode_instigator(self, instigator):
