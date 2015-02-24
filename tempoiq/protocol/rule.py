@@ -78,28 +78,28 @@ class Transition(object):
 
 
 class Alert(object):
-    def __init__(self, alert_id, rule_key, edges):
+    def __init__(self, alert_id, rule_key, transitions):
         self.id = alert_id
         self.rule_key = rule_key
-        self.edges = edges
+        self.transitions = transitions
 
     @property
     def is_resolved(self):
         resolved = False
-        for edge in self.edges:
-            if edge.edge == 'falling':
+        for transition in self.transitions:
+            if transition.to == 'ok':
                 resolved = True
                 break
         return resolved
 
     @property
-    def rising_edge(self):
-        for edge in self.edges:
-            if edge.edge == 'rising':
-                return edge
+    def warning_transition(self):
+        for transition in self.transitions:
+            if transition.to == 'warning':
+                return transition
 
     @property
-    def falling_edge(self):
-        for edge in self.edges:
-            if edge.edge == 'falling':
-                return edge
+    def ok_transition(self):
+        for transition in self.transitions:
+            if transition.to == 'ok':
+                return transition
