@@ -1,6 +1,6 @@
 import operator
 from rule import Rule, Condition, Trigger, Filter, Webhook, Email
-from rule import ActionLog, Instigator, Edge, Alert
+from rule import ActionLog, Instigator, Transition, Alert
 from device import Device
 from sensor import Sensor
 from point import Point
@@ -115,27 +115,18 @@ class TempoIQDecoder(object):
         #see comment in decode_instigator for why this is here
         if not alert.get('alert_id'):
             return alert
-        decoded_edges = []
-        if alert.get("transitions"):
-            for transition in alert['transitions']:
-                tstamp = convert_iso_stamp(transition['timestamp'])
-                instigator = self.decode_instigator(transition['instigator'])
-                edge_direction = "rising" if transition['transition_to'] == "warning" else "falling"
-                action_logs = [self.decode_action_log(a) for a in transition['actions']]
-                edge_obj = Edge(tstamp, instigator, edge_direction, action_logs)
-                decoded_edges.append(edge_obj)
-        elif alert.get("edges", False):
-            for edge in alert['edges']:
-                tstamp = convert_iso_stamp(edge['timestamp'])
-                instigator = self.decode_instigator(edge['instigator'])
-                edge_direction = edge['edge']
-                action_logs = [self.decode_action_log(a) for a in edge['actions']]
-                edge_obj = Edge(tstamp, instigator, edge_direction, action_logs)
-                decoded_edges.append(edge_obj)
-        else:
-            decoded_edges = []
-
-        return Alert(alert['alert_id'], alert['rule_key'], decoded_edges)
+        decoded_transitions = []
+        for transition in alert['transitions']:
+            tstamp = convert_iso_stamp(transition['timestamp'])
+            instigator = self.decode_instigator(transition['instigator'])
+            transition_direction = transition['transition_to']
+            action_logs = [self.decode_action_log(a) for a
+                           in transition['actions']]
+            transition_obj = Transition(tstamp, instigator,
+                                        transition_direction,
+                                        action_logs)
+            decoded_transitions.append(transition_obj)
+        return Alert(alert['alert_id'], alert['rule_key'], decoded_transitions)
 
     def decode_alert_list(self, alert):
         if alert.get('data') is None:
@@ -167,7 +158,7 @@ class TempoIQDecoder(object):
                                         selection_type='devices'),
             'sensors': decode_selection(rule['search']['filters']['sensors'],
                                         selection_type='sensors'),
-            }
+        }
 
         conditions = []
         for c in rule['rule']['conditions']:

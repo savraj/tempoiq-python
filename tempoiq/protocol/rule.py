@@ -1,11 +1,11 @@
-import copy
 from query.selection import ScalarSelectable
 
 
 class Rule(object):
     key = ScalarSelectable('rules', 'key')
 
-    def __init__(self, name, alert_by=None, key=None, selection=None, conditions=None, action=None, status=None):
+    def __init__(self, name, alert_by=None, key=None, selection=None,
+                 conditions=None, action=None, status=None):
         self.name = name
         self.alert_by = alert_by
         self.key = key
@@ -69,37 +69,37 @@ class Instigator(object):
         self.device = device
 
 
-class Edge(object):
-    def __init__(self, timestamp, instigator, edge, action_logs):
+class Transition(object):
+    def __init__(self, timestamp, instigator, transition_type, action_logs):
         self.timestamp = timestamp
         self.instigator = instigator
-        self.edge = edge
+        self.to = transition_type
         self.action_logs = action_logs
 
 
 class Alert(object):
-    def __init__(self, alert_id, rule_key, edges):
+    def __init__(self, alert_id, rule_key, transitions):
         self.id = alert_id
         self.rule_key = rule_key
-        self.edges = edges
+        self.transitions = transitions
 
     @property
     def is_resolved(self):
         resolved = False
-        for edge in self.edges:
-            if edge.edge == 'falling':
+        for transition in self.transitions:
+            if transition.to == 'ok':
                 resolved = True
                 break
         return resolved
 
     @property
-    def rising_edge(self):
-        for edge in self.edges:
-            if edge.edge == 'rising':
-                return edge
+    def warning_transition(self):
+        for transition in self.transitions:
+            if transition.to == 'warning':
+                return transition
 
     @property
-    def falling_edge(self):
-        for edge in self.edges:
-            if edge.edge == 'falling':
-                return edge
+    def ok_transition(self):
+        for transition in self.transitions:
+            if transition.to == 'ok':
+                return transition

@@ -347,7 +347,7 @@ class TestTempoIQDecoder(unittest.TestCase):
         j = """{
     "alert_id": 1,
     "rule_key": "key-1",
-    "edges": [
+    "transitions": [
         {
             "timestamp": "2015-01-01T00:00:00.000Z",
             "instigator": {
@@ -368,7 +368,7 @@ class TestTempoIQDecoder(unittest.TestCase):
                     "attributes": {}
                 }
             },
-            "edge": "rising",
+            "transition_to": "warning",
             "actions": [
                 {
                     "payload": "test payload",
@@ -387,14 +387,15 @@ class TestTempoIQDecoder(unittest.TestCase):
         decoded = json.loads(j, object_hook=decoder)
         self.assertEquals(decoded.id, 1)
         self.assertEquals(decoded.rule_key, 'key-1')
-        self.assertTrue(isinstance(decoded.edges[0], Edge))
-        self.assertTrue(isinstance(decoded.edges[0].instigator, Instigator))
+        self.assertTrue(isinstance(decoded.transitions[0], Transition))
+        self.assertTrue(isinstance(decoded.transitions[0].instigator,
+                                   Instigator))
 
     def test_decoder_for_list_of_alerts(self):
         j = """{"data":[{
     "alert_id": 1,
     "rule_key": "key-1",
-    "edges": [
+    "transitions": [
         {
             "timestamp": "2015-01-01T00:00:00.000Z",
             "instigator": {
@@ -415,7 +416,7 @@ class TestTempoIQDecoder(unittest.TestCase):
                     "attributes": {}
                 }
             },
-            "edge": "rising",
+            "transition_to": "warning",
             "actions": [
                 {
                     "payload": "test payload",
@@ -434,9 +435,11 @@ class TestTempoIQDecoder(unittest.TestCase):
         decoded = json.loads(j, object_hook=decoder)
         self.assertEquals(decoded['data'][0].id, 1)
         self.assertEquals(decoded['data'][0].rule_key, 'key-1')
-        self.assertTrue(isinstance(decoded['data'][0].edges[0], Edge))
-        self.assertTrue(isinstance(decoded['data'][0].edges[0].instigator,
-                                   Instigator))
+        self.assertTrue(isinstance(decoded['data'][0].transitions[0],
+                                   Transition))
+        self.assertTrue(isinstance(
+            decoded['data'][0].transitions[0].instigator,
+            Instigator))
 
     def test_device_decoder(self):
         j = """{
