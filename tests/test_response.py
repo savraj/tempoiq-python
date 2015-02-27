@@ -33,3 +33,11 @@ class TestResponse(unittest.TestCase):
         self.assertEquals(r.reason, 'Forbidden')
         self.assertEquals(r.successful, 2)
         self.assertEquals(r.error, 'foo')
+
+    def test_response_status_code_alias(self):
+        resp = DummyResponse()
+        resp.status_code = 207
+        resp.reason = 'Forbidden'
+        resp.text = 'foo'
+        r = Response(resp, None)
+        self.assertEquals(r.status_code, 207)
