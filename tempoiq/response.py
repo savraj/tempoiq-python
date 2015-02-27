@@ -52,6 +52,7 @@ class Response(object):
         self.resp = resp
         self.session = session
         self.status = resp.status_code
+        self.status_code = self.status
         self.reason = resp.reason
         if self.status == 200:
             self.successful = SUCCESS
