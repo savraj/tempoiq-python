@@ -1,4 +1,11 @@
 # TempoIQ Python Library
+# Adapted to work with google appengine, by savraj
+
+Removed dependence on requests, swapped in appengine's urlfetch, made a few other changes, like using pytz.gae, see diff
+
+To use, copy paste the tempoiq folder into your project and import tempoiq
+
+===
 
 The TempoIQ Python API library makes calls to the [TempoIQ API](https://tempoiq.com/). The module is available on PyPI as [tempoiq](https://pypi.python.org/pypi/tempoiq/):
 

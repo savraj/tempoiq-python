@@ -1,6 +1,6 @@
 import re
 import dateutil.parser
-import pytz
+from pytz.gae import pytz
 
 
 ISO = re.compile(

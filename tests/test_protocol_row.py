@@ -1,5 +1,5 @@
 import unittest
-import pytz
+from pytz.gae import pytz
 import datetime
 from tempoiq.protocol.row import Row, SelectionEvaluator, StreamInfo
 from tempoiq.protocol.row import PointStream

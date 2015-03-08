@@ -1,8 +1,9 @@
-import requests
-from requests.auth import HTTPBasicAuth
 import urlparse
 import urllib
+import base64
+from google.appengine.api import urlfetch
 
+TIQ_REQUEST_TIMEOUT = 35
 
 def make_url_args(params):
     """Utility function for constructing a URL query string from a dictionary
@@ -79,13 +80,8 @@ class HTTPEndpoint(object):
 
         self.headers = {
             'User-Agent': 'tempoiq-python/%s' % "1.0.2",
-            'Accept-Encoding': 'gzip'
+            'Authorization': "Basic %s" % base64.b64encode("%s:%s" % (key,secret))
         }
-        self.auth = HTTPBasicAuth(key, secret)
-        self.pool = requests.session()
-        for p in ['http://', 'https://']:
-            adapter = requests.adapters.HTTPAdapter()
-            self.pool.mount(p, adapter)
 
     def post(self, url, body, headers={}):
         """Perform a POST request to the given resource with the given
@@ -98,8 +94,7 @@ class HTTPEndpoint(object):
 
         to_hit = urlparse.urljoin(self.base_url, url)
         merged = merge_headers(self.headers, headers)
-        resp = self.pool.post(to_hit, data=body, auth=self.auth,
-                              headers=merged)
+        resp = urlfetch.fetch(url=to_hit,method="POST",payload=body,headers=merged,deadline=TIQ_REQUEST_TIMEOUT)
         return resp
 
     def get(self, url, body='', headers={}):
@@ -110,10 +105,9 @@ class HTTPEndpoint(object):
         :param string url: the URL resource to hit
         :rtype: requests.Response object"""
 
-        to_hit = urlparse.urljoin(self.base_url, url)
+        to_hit = urlparse.urljoin(self.base_url, url) + "query"
         merged = merge_headers(self.headers, headers)
-        resp = self.pool.get(to_hit, data=body, auth=self.auth,
-                             headers=merged)
+        resp = urlfetch.fetch(url=to_hit,method="POST",payload=body,headers=merged,deadline=TIQ_REQUEST_TIMEOUT)
         return resp
 
     def delete(self, url, body='', headers={}):
@@ -126,8 +120,7 @@ class HTTPEndpoint(object):
 
         to_hit = urlparse.urljoin(self.base_url, url)
         merged = merge_headers(self.headers, headers)
-        resp = self.pool.delete(to_hit, data=body, auth=self.auth,
-                                headers=merged)
+        resp = urlfetch.fetch(url=to_hit,method="DELETE",payload=body,headers=merged,deadline=TIQ_REQUEST_TIMEOUT)
         return resp
 
     def put(self, url, body, headers={}):
@@ -141,6 +134,5 @@ class HTTPEndpoint(object):
 
         to_hit = urlparse.urljoin(self.base_url, url)
         merged = merge_headers(self.headers, headers)
-        resp = self.pool.put(to_hit, data=body, auth=self.auth,
-                             headers=merged)
+        resp = urlfetch.fetch(url=to_hit,method="PUT",payload=body,headers=merged,deadline=TIQ_REQUEST_TIMEOUT)
         return resp

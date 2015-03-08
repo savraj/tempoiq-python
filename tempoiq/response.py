@@ -3,7 +3,6 @@ from protocol.cursor import DeviceCursor, StreamResponseCursor
 from protocol.cursor import DataPointsCursor
 from protocol.decoder import TempoIQDecoder
 
-
 SUCCESS = 0
 FAILURE = 1
 PARTIAL = 2
@@ -53,19 +52,19 @@ class Response(object):
         self.session = session
         self.status = resp.status_code
         self.status_code = self.status
-        self.reason = resp.reason
+        self.reason = resp.status_code
         if self.status == 200:
             self.successful = SUCCESS
             self.error = None
         elif self.status == 207:
             self.successful = PARTIAL
-            self.error = self.resp.text
+            self.error = resp.content
         else:
             self.successful = FAILURE
-            self.error = self.resp.text
+            self.error = resp.content
 
         self.resp.encoding = "UTF-8"
-        self.body = self.resp.text
+        self.body = resp.content
         self.data = None
 
 
